@@ -1,21 +1,26 @@
 (ns rummikub-ctmx.routes.home
   (:require
-   [rummikub-ctmx.layout :as layout]
-   [clojure.java.io :as io]
-   [rummikub-ctmx.middleware :as middleware]
-   [ring.util.response]
-   [ring.util.http-response :as response]))
+    [ctmx.core :as ctmx]
+    ctmx.response
+    [rummikub-ctmx.render :as render]
+    [rummikub-ctmx.util :as util]
+    [rummikub-ctmx.views.login :as login]))
 
-(defn home-page [request]
-  (layout/render request "home.html" {:docs (-> "docs/docs.md" io/resource slurp)}))
+(defn logged-in? [req]
+  (-> req :session :user boolean))
 
-(defn about-page [request]
-  (layout/render request "about.html"))
+(ctmx/defcomponent ^:endpoint root [req user]
+  (ctmx/with-req req
+    (if post?
+      (assoc ctmx.response/hx-refresh :session {:user user})
+      [:div.container
+       (if (logged-in? req)
+         "done"
+         (login/login req))])))
 
 (defn home-routes []
-  [""
-   {:middleware [middleware/wrap-csrf
-                 middleware/wrap-formats]}
-   ["/" {:get home-page}]
-   ["/about" {:get about-page}]])
-
+  (ctmx/make-routes
+    "/"
+    (fn [req]
+      (render/html5-response
+        (root req)))))
