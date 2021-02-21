@@ -4,7 +4,8 @@
     ctmx.response
     [rummikub-ctmx.render :as render]
     [rummikub-ctmx.util :as util]
-    [rummikub-ctmx.views.login :as login]))
+    [rummikub-ctmx.views.login :as login]
+    [rummikub-ctmx.views.room :as room]))
 
 (defn logged-in? [req]
   (-> req :session :user boolean))
@@ -15,7 +16,7 @@
       (assoc ctmx.response/hx-refresh :session {:user user})
       [:div.container
        (if (logged-in? req)
-         "done"
+         (room/room req)
          (login/login req))])))
 
 (defn home-routes []

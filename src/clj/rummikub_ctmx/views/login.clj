@@ -1,9 +1,7 @@
-(ns rummikub-ctmx.views.login
-  (:require
-    [ctmx.core :as ctmx]))
+(ns rummikub-ctmx.views.login)
 
-(ctmx/defcomponent login [req]
-  [:form.mt-5 {:id id :hx-post "root"}
+(defn login [req]
+  [:form.mt-5 {:hx-post "root"}
    [:div.form-group
     [:label "Username"]
     [:input.form-control
