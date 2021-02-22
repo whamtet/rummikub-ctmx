@@ -10,7 +10,6 @@
                  [funcool/struct "1.4.0"]
                  [luminus-http-kit "0.1.9"]
                  [luminus-transit "0.1.2"]
-                 [luminus/ring-ttl-session "0.3.3"]
                  [markdown-clj "1.10.5"]
                  [metosin/muuntaja "0.6.8"]
                  [metosin/reitit "0.5.12"]

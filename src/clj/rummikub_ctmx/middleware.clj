@@ -7,9 +7,8 @@
     [rummikub-ctmx.middleware.formats :as formats]
     [muuntaja.middleware :refer [wrap-format wrap-params]]
     [rummikub-ctmx.config :refer [env]]
-    [ring-ttl-session.core :refer [ttl-memory-store]]
-    [ring.middleware.defaults :refer [site-defaults wrap-defaults]])
-  )
+    [rummikub-ctmx.middleware.store :refer [store]]
+    [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
 
 (defn wrap-internal-error [handler]
   (fn [req]
@@ -42,5 +41,5 @@
       (wrap-defaults
         (-> site-defaults
             (assoc-in [:security :anti-forgery] false)
-            (assoc-in  [:session :store] (ttl-memory-store (* 60 30)))))
+            (assoc-in  [:session :store] store)))
       wrap-internal-error))
