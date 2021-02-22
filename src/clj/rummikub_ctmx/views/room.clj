@@ -21,11 +21,12 @@
   (ctmx/with-req req
     (if delete?
       (sse/logout user)
-      [:form {:hx-delete "delete-row"
-              :hx-confirm (format "Delete %s?" user)
-              :hx-trigger "click"}
+      [:form
        [:input {:type "hidden" :name "user" :value user}]
-       [:a {:href "javascript:void(0)"} user]])))
+       [:a {:href "javascript:void(0)"
+            :hx-delete "delete-row"
+            :hx-confirm (format "Delete %s?" user)}
+        user]])))
 
 (ctmx/defcomponent control-panel [req user]
   [:div.float-right
