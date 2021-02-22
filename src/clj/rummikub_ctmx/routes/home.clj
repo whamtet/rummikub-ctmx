@@ -22,7 +22,7 @@
     (case request-method
       :delete
       (quit req)
-      [:div.container
+      [:div.container.mt-3
        (if (logged-in? req)
          (room/room req)
          (login/login req))])))

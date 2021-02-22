@@ -2,6 +2,7 @@
   (:require
     [rummikub-ctmx.middleware :as middleware]
     [rummikub-ctmx.layout :refer [error-page]]
+    [rummikub-ctmx.routes.api :refer [api-routes]]
     [rummikub-ctmx.routes.home :refer [home-routes]]
     [reitit.ring :as ring]
     [ring.middleware.content-type :refer [wrap-content-type]]
@@ -17,7 +18,8 @@
   :start
   (ring/ring-handler
     (ring/router
-      [(home-routes)])
+      [(api-routes)
+       (home-routes)])
     (ring/routes
       (ring/create-resource-handler
         {:path "/"})
