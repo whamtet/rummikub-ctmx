@@ -52,8 +52,9 @@
 (defn sort-player! [player]
   (swap! state sort-player player))
 
-(defn pick-up [{:keys [pool players table]} player n]
-  (let [to-pick (->> pool shuffle (take n))
+(defn pick-up [{:keys [pool players table]} player]
+  (assert (every? #(-> % second first (not= player)) players))
+  (let [to-pick (->> pool shuffle (take 14))
         unsorted (concat to-pick (tiles-for-player player players))
         sorted (sort-tiles player unsorted)]
     {:pool (set/difference pool (set to-pick))
@@ -67,7 +68,7 @@
      :table table}))
 
 (defn pick-up-new! [player]
-  (swap! state pick-up player 14))
+  (swap! state pick-up player))
 (defn pick-up-one! [player]
   (swap! state pick-up-one player))
 

@@ -13,5 +13,7 @@
    (map tile tiles)])
 
 (defn room [req]
+  (let [{:keys [user]} (:session req)]
   [:div
-   [:button.btn.btn-primary.float-right {:hx-delete "root"} "Quit"]])
+   [:button.btn.btn-primary.float-right {:hx-delete "root"} "Quit"]
+   [:h2 "Welcome " user]]))
