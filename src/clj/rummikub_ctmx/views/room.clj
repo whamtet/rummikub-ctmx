@@ -20,9 +20,7 @@
 (ctmx/defcomponent ^:endpoint delete-row [req i user]
   (ctmx/with-req req
     (if delete?
-      (do
-        (sse/logout user)
-        ctmx.response/hx-refresh)
+      (sse/logout user)
       [:form {:hx-delete "delete-row"
               :hx-confirm (format "Delete %s?" user)
               :hx-trigger "click"}

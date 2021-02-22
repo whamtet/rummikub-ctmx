@@ -18,7 +18,13 @@
           :when connection]
     (httpkit/send! connection (msg-str event) false)))
 
-(defn logout [user]
-  (send! "logout" user))
-(defn refresh [user]
-  (send! "refresh" user))
+(defn send-all! [event & exceptions]
+  (let [exceptions (set exceptions)]
+    (doseq [[user connection] @connections
+            :when (-> user exceptions not)]
+      (httpkit/send! connection (msg-str event) false))))
+
+(def logout (partial send! "logout"))
+(def refresh (partial send! "refresh"))
+
+(def refresh-all (partial send-all! "refresh"))

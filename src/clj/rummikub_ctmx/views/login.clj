@@ -9,8 +9,9 @@
     (let [result (and post? (login/login! user password))]
       (if (= :ok result)
         (assoc ctmx.response/hx-refresh :session {:user user})
-        [:form.mt-5 {:hx-post "login"}
-         [:div.form-group
+        [:form {:hx-post "login"}
+         [:h3 "Rummikub Login"]
+         [:div.form-group.mt-4
           [:label "Username"]
           [:input.form-control
            {:type "text" :name "user" :value user :placeholder "Enter Username" :required true}]]

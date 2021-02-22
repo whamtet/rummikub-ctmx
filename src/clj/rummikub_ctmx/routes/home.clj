@@ -3,6 +3,7 @@
     [ctmx.core :as ctmx]
     ctmx.response
     [rummikub-ctmx.render :as render]
+    [rummikub-ctmx.service.sse :as sse]
     [rummikub-ctmx.service.state :as state]
     [rummikub-ctmx.util :as util]
     [rummikub-ctmx.views.login :as login]
@@ -10,12 +11,12 @@
 
 (defn logged-in? [req]
   (-> req :session :user boolean))
-(defn quit [req]
-  (let [{:keys [session]} req
-        logged-out (dissoc session :user)]
-    (-> session :user state/quit!)
-    (assoc ctmx.response/hx-refresh :session logged-out)))
 
+(defn quit [req]
+  (let [{:keys [user]} (:session req)]
+    (state/quit! user)
+    (sse/refresh-all user) ;;because we wish to refresh with a session reset
+    (assoc ctmx.response/hx-refresh :session {})))
 
 (ctmx/defcomponent ^:endpoint root [req user]
   (ctmx/with-req req
