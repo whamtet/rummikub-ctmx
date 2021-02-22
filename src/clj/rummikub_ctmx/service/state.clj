@@ -23,7 +23,7 @@
      :table {} ;; tile -> [x y]
      }))
 
-(defn tiles-for-player [player {:keys [players]}]
+(defn tiles-for-player [player players]
   (for [[tile [name]] players :when (= name player)]
     tile))
 
@@ -42,6 +42,7 @@
 
 (defn sort-player [state player]
   (->> state
+       :players
        (tiles-for-player player)
        (sort-tiles player)
        (update state :players merge)))
@@ -50,16 +51,22 @@
 
 (defn pick-up [{:keys [pool players table]} player n]
   (let [to-pick (->> pool shuffle (take n))
-        first-row (for [[tile [p i]] players :when (= [p i] [player 0])] tile)
-        new-row (concat first-row to-pick)
-        new-players (into {}
-                          (for [[j tile] (enumerate new-row)]
-                            [tile [player 0 j]]))]
+        unsorted (concat to-pick (tiles-for-player player players))
+        sorted (sort-tiles player unsorted)]
     {:pool (set/difference pool (set to-pick))
-     :players (merge players new-players)
+     :players (merge players sorted)
      :table table}))
-(defn pick-up! [player n]
-  (swap! state pick-up player n))
+(defn pick-up-one [{:keys [pool players table]} player]
+  (let [to-pick (-> pool seq rand-nth)
+        first-row (for [[tile [p i]] players :when (= [p i] [player 0])] tile)]
+    {:pool (disj pool to-pick)
+     :players (assoc players to-pick [player 0 (-> first-row count inc)])
+     :table table}))
+
+(defn pick-up! [player]
+  (swap! state pick-up player 14))
+(defn pick-up-one! [player]
+  (swap! state pick-up-one player))
 
 (defn put-down [{:keys [pool players table]} tile x y]
   {:pool pool
