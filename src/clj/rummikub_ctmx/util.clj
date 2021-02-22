@@ -1,7 +1,8 @@
 (ns rummikub-ctmx.util
   (:require
-    clojure.pprint))
+    [clojure.string :as string]))
 
-(defn ppr-str [arg]
-  (with-out-str
-    (clojure.pprint/pprint arg)))
+(defn fmt-style [style]
+  (->> style
+       (map (fn [[k v]] (str (name k) ": " v)))
+       (string/join "; ")))

@@ -23,9 +23,12 @@
      :table {} ;; tile -> [x y]
      }))
 
-(defn tiles-for-player [player players]
-  (for [[tile [name]] players :when (= name player)]
-    tile))
+(defn tiles-for-player
+  ([player]
+   (->> @state :players (tiles-for-player player)))
+  ([player players]
+   (for [[tile [name]] players :when (= name player)]
+     tile)))
 
 (defn sort-tiles [player tiles]
   (let [{:keys [red yellow blue black]} (group-by first tiles)
@@ -63,7 +66,7 @@
      :players (assoc players to-pick [player 0 (-> first-row count inc)])
      :table table}))
 
-(defn pick-up! [player]
+(defn pick-up-new! [player]
   (swap! state pick-up player 14))
 (defn pick-up-one! [player]
   (swap! state pick-up-one player))
@@ -89,3 +92,11 @@
      :table (dissoc table tile)}))
 (defn pick-up-used! [tile player i j]
   (swap! state pick-up-used tile player i j))
+
+(defn quit [{:keys [pool players table]} player]
+  (let [to-remove (tiles-for-player player players)]
+    {:pool (set/union pool (set to-remove))
+     :players (apply dissoc players to-remove)
+     :table table}))
+(defn quit! [player]
+  (swap! state quit player))
