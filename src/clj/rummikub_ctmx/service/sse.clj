@@ -4,14 +4,16 @@
 
 (defonce connections (atom {}))
 
-(defn- safe-conj [s v]
-  (conj (or s #{}) v))
-(defn add-connection [page connection]
-  (swap! connections update page safe-conj connection))
-(defn remove-connection [page connection]
-  (swap! connections update page disj connection))
+(defn add-connection [user connection]
+  (swap! connections assoc user connection))
+(defn remove-connection [user connection]
+  (swap! connections update user disj connection))
 
-(defn send! [& msgs]
-  (doseq [msg msgs
-          connection (@connections msg)]
-    (httpkit/send! connection (str "event: update\ndata: \n\n") false)))
+(defn- msg-str [event]
+  (format "event: %s\ndata: \n\n" event))
+
+(defn send! [event & recipients]
+  (doseq [recipient recipients
+          :let [connection (@connections recipient)]
+          :when connection]
+    (httpkit/send! connection (msg-str event) false)))

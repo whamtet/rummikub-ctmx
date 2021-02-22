@@ -14,12 +14,14 @@
 
 (defn control-panel [user]
   [:div.float-right
-   [:button.btn.btn-primary {:hx-delete "root"} "Quit"]
+   [:button.btn.btn-primary
+    {:hx-delete "root" :hx-trigger "click, sse:logout"}
+    "Quit"]
    (when (= "Matt" user)
      [:div "panel"])])
 
 (defn room [req]
   (let [{:keys [user]} (:session req)]
-  [:div {:hx-sse (str "connect:/api/sse?user=" user)}
-   (control-panel user)
-   [:h2 "Welcome " user]]))
+    [:div {:hx-sse (str "connect:/api/sse?user=" user)}
+     (control-panel user)
+     [:h2 "Welcome " user]]))
