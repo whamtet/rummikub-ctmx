@@ -10,10 +10,6 @@
 
 (defn logged-in? [req]
   (-> req :session :user boolean))
-(defn login [user]
-  (assert (not-empty user))
-  (state/pick-up-new! user)
-  (assoc ctmx.response/hx-refresh :session {:user user}))
 (defn quit [req]
   (let [{:keys [session]} req
         logged-out (dissoc session :user)]
@@ -24,8 +20,6 @@
 (ctmx/defcomponent ^:endpoint root [req user]
   (ctmx/with-req req
     (case request-method
-      :post
-      (login user)
       :delete
       (quit req)
       [:div.container

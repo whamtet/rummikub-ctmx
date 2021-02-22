@@ -12,8 +12,8 @@
 
 (def tiles
   (concat
-    (for [color colors number numbers _ (range 2)]
-      [color number])
+    (for [color colors number numbers i (range 2)]
+      [color number i])
     [[:red :joker] [:black :joker]]))
 
 (def state

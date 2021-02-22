@@ -30,4 +30,5 @@
                  :integrity "sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
                  :crossorigin "anonymous"}]
        [:script {:src "/js/htmx.min.js"}]
+       [:script {:src "/js/common.js"}]
        (when js [:script {:src (str "/js" js)}])))))
