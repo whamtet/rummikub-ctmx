@@ -24,7 +24,6 @@
             :when (-> user exceptions not)]
       (httpkit/send! connection (msg-str event) false))))
 
-(def logout (partial send! "logout"))
 (def refresh (partial send! "refresh"))
 
 (def refresh-all (partial send-all! "refresh"))
