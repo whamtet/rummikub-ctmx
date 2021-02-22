@@ -1,6 +1,7 @@
 (ns rummikub-ctmx.service.state
   (:require
-    [clojure.set :as set]))
+    [clojure.set :as set]
+    [rummikub-ctmx.util :as util]))
 
 (def colors [:red :yellow :blue :black])
 (def numbers (range 1 14))
@@ -55,8 +56,7 @@
 (defn pick-up [{:keys [pool players table]} player]
   (assert (every? #(-> % second first (not= player)) players))
   (let [to-pick (->> pool shuffle (take 14))
-        unsorted (concat to-pick (tiles-for-player player players))
-        sorted (sort-tiles player unsorted)]
+        sorted (sort-tiles player to-pick)]
     {:pool (set/difference pool (set to-pick))
      :players (merge players sorted)
      :table table}))
@@ -83,7 +83,9 @@
   (let [[before after] (split-at i s)]
     (concat before [tile] after)))
 (defn pick-up-used [{:keys [pool players table]} tile player i j]
-  (let [insert-row (for [[tile [p id]] players :when (= [p id] [player i])] tile)
+  (let [insert-row (for [[t [p id]] players
+                         :when (= [p id] [player i])
+                         :when (not= t tile)] tile)
         new-row (insert-at insert-row j tile)
         new-players (into {}
                           (for [[j tile] (enumerate new-row)]
@@ -104,3 +106,8 @@
 
 (defn users []
   (->> @state :players vals (map first) set))
+
+(defn player-state [player]
+  (let [{:keys [players table]} @state]
+    {:table table
+     :players (util/filter-vals #(-> % first (= player)) players)}))

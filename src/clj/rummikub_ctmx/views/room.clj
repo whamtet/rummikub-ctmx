@@ -1,47 +1,39 @@
 (ns rummikub-ctmx.views.room
   (:require
     [ctmx.core :as ctmx]
-    ctmx.response
-    ctmx.rt
-    [rummikub-ctmx.service.sse :as sse]
     [rummikub-ctmx.service.state :as state]
-    [rummikub-ctmx.util :as util]))
+    [rummikub-ctmx.util :as util]
+    [rummikub-ctmx.views.control-panel :as control-panel]))
 
-(def ^:private base-style {:width "2em" :height "3em" :border "1px solid grey" :margin "5px"})
-(defn tile [[number color]]
-  [:div {:style (-> base-style (assoc :color color) util/fmt-style)}
-   (case number :joker ":)" number)])
+(def ^:private base-style {:width "2em"
+                           :height "3em"
+                           :border "1px solid grey"
+                           :margin "5px"
+                           :display "inline-block"})
+(defn tile [[color number]]
+  (let [color (case color :yellow "gold" (name color))]
+    [:div.text-center {:style (-> base-style (assoc :color color) util/fmt-style)}
+     (case number :joker ":)" number)]))
 
-(def ^:private board-style {:border "1ps solid black"})
-(defn board [tiles]
-  [:div {:style (util/fmt-style board-style)}
-   (map tile tiles)])
+(defn board [players]
+  (let [tiles-for-row
+        (fn [row]
+          (for [[tile [_ i]] players :when (= row i)] tile))]
+    [:div
+     [:div {:style "border: 1px solid black"}
+      (->> 0 tiles-for-row (map tile))]
+     [:div {:style "border: 1px solid black"}
+      (->> 1 tiles-for-row (map tile))]]))
 
-(ctmx/defcomponent ^:endpoint delete-row [req i user]
-  (ctmx/with-req req
-    (if delete?
-      (sse/logout user)
-      [:form
-       [:input {:type "hidden" :name "user" :value user}]
-       [:a {:href "javascript:void(0)"
-            :hx-delete "delete-row"
-            :hx-confirm (format "Delete %s?" user)}
-        user]])))
-
-(ctmx/defcomponent control-panel [req user]
-  [:div.float-right
-   [:button.btn.btn-primary
-    {:hx-delete "root" :hx-trigger "click, sse:logout"}
-    "Quit"]
-   (when (= "Matt" user)
-     [:div.mt-2
-      (->> (state/users)
-           (remove #(= % "Matt"))
-           (ctmx.rt/map-indexed delete-row req))])])
+(defn table-div [table]
+  [:div {:style "height: 450px"}])
 
 (ctmx/defcomponent room [req]
-  (let [{:keys [user]} (:session req)]
+  (let [{:keys [user]} (:session req)
+        {:keys [table players]} (state/player-state user)]
     [:div {:hx-sse (str "connect:/api/sse?user=" user)}
      [:div {:hx-get "/api/refresh" :hx-trigger "sse:refresh"}]
-     (control-panel req user)
-     [:h2 "Welcome " user]]))
+     (control-panel/control-panel req user)
+     [:h2 "Welcome " user]
+     (table-div table)
+     (board players)]))

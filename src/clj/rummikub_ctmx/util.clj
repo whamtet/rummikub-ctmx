@@ -9,3 +9,8 @@
        (string/join "; ")))
 
 (def write-str json/write-str)
+
+(defn filter-vals [f m]
+  (into {}
+        (for [[k v] m :when (f v)]
+          [k v])))
