@@ -16,7 +16,7 @@
       [color number i])
     [[:red :joker] [:black :joker]]))
 
-(def state
+(defonce state
   (atom
     {:pool (set tiles)
      :players {} ;; tile -> [player i j]
@@ -101,3 +101,6 @@
      :table table}))
 (defn quit! [player]
   (swap! state quit player))
+
+(defn users []
+  (->> @state :players vals (map first) set))

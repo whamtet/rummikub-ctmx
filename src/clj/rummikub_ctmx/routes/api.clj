@@ -1,7 +1,8 @@
 (ns rummikub-ctmx.routes.api
   (:require
-    [rummikub-ctmx.service.sse :as sse]
-    [org.httpkit.server :as httpkit]))
+    ctmx.response
+    [org.httpkit.server :as httpkit]
+    [rummikub-ctmx.service.sse :as sse]))
 
 (defn sse [req]
   (let [user (-> req :params :user)]
@@ -13,8 +14,9 @@
                    "Cache-Control" "no-cache"}}
         false)
       (sse/add-connection user channel)
-      (httpkit/on-close channel (fn [_] (sse/remove-connection user channel))))))
+      (httpkit/on-close channel (fn [_] (sse/remove-connection user))))))
 
 (defn api-routes []
   ["/api"
-   ["/sse" sse]])
+   ["/sse" sse]
+   ["/refresh" (fn [_] ctmx.response/hx-refresh)]])

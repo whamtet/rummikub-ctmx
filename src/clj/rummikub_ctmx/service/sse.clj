@@ -6,8 +6,8 @@
 
 (defn add-connection [user connection]
   (swap! connections assoc user connection))
-(defn remove-connection [user connection]
-  (swap! connections update user disj connection))
+(defn remove-connection [user]
+  (swap! connections dissoc user))
 
 (defn- msg-str [event]
   (format "event: %s\ndata: \n\n" event))
@@ -17,3 +17,8 @@
           :let [connection (@connections recipient)]
           :when connection]
     (httpkit/send! connection (msg-str event) false)))
+
+(defn logout [user]
+  (send! "logout" user))
+(defn refresh [user]
+  (send! "refresh" user))
