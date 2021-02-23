@@ -25,5 +25,6 @@
                 :crossorigin "anonymous"}]]
        [:body body]
        [:script {:src "/js/htmx.min.js"}]
-       [:script {:type "module" :src "/js/common.js"}]
+       [:script {:src "https://unpkg.com/interactjs/dist/interact.min.js"}]
+       [:script {:src "/js/common.js"}]
        (when js [:script {:src (str "/js" js)}])))))

@@ -53,9 +53,10 @@
 (defn sort-player! [player]
   (swap! state sort-player player))
 
+(def to-take 2)
 (defn pick-up [{:keys [pool players table]} player]
   (assert (every? #(-> % second first (not= player)) players))
-  (let [to-pick (->> pool shuffle (take 14))
+  (let [to-pick (->> pool shuffle (take to-take))
         sorted (sort-tiles player to-pick)]
     {:pool (set/difference pool (set to-pick))
      :players (merge players sorted)
@@ -107,7 +108,14 @@
 (defn users []
   (->> @state :players vals (map first) set))
 
+(defn third [x]
+  (get x 2))
 (defn player-state [player]
   (let [{:keys [players table]} @state]
     {:table table
-     :players (util/filter-vals #(-> % first (= player)) players)}))
+     :rows
+     (->> players
+          (filter #(-> % second first (= player)))
+          (sort-by #(-> % second third))
+          (reduce (fn [m [tile [_ i]]]
+                    (update m i conj tile)) [[] []]))}))

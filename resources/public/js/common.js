@@ -1,8 +1,6 @@
 htmx.config.defaultSwapStyle = 'outerHTML';
 htmx.config.defaultSettleDelay = 0;
 
-import interact from 'https://cdn.interactjs.io/v1.10.3/interactjs/index.js';
-
 function dragMoveListener (event) {
   var target = event.target
   // keep the dragged position in the data-x/data-y attributes
@@ -30,14 +28,29 @@ interact('.tile').draggable({
   }
 });
 
+const setPosition = el => {
+  const position = el.getBoundingClientRect();
+  el.children[0].value = position.x + ', ' + position.y;
+}
+
 interact('#table').dropzone({
   ondrop: function() {
     console.log('drop table');
   }
 });
 
-interact('#board').dropzone({
-  ondrop: function() {
-    console.log('drop board');
-  }
+const dropRow = (row) => (e) => {
+  const dropped = e.dragEvent.target;
+  document.querySelector('#drop-row').value = row;
+  document.querySelector('#drop-tile').value = dropped.id;
+  document.querySelectorAll('.board .tile').forEach(setPosition);
+  document.querySelector('#board-submit').click();
+};
+
+interact('#board0').dropzone({
+  ondrop: dropRow(0)
+});
+
+interact('#board1').dropzone({
+  ondrop: dropRow(1)
 });
