@@ -12,21 +12,21 @@
                            :display "inline-block"})
 (defn tile [[color number]]
   (let [color (case color :yellow "gold" (name color))]
-    [:div.text-center {:style (-> base-style (assoc :color color) util/fmt-style)}
+    [:div.text-center.tile {:style (-> base-style (assoc :color color) util/fmt-style)}
      (case number :joker ":)" number)]))
 
 (defn board [players]
   (let [tiles-for-row
         (fn [row]
           (for [[tile [_ i]] players :when (= row i)] tile))]
-    [:div
+    [:div#board
      [:div {:style "border: 1px solid black"}
       (->> 0 tiles-for-row (map tile))]
      [:div {:style "border: 1px solid black"}
       (->> 1 tiles-for-row (map tile))]]))
 
 (defn table-div [table]
-  [:div {:style "height: 450px"}])
+  [:div#table {:style "height: 450px"}])
 
 (ctmx/defcomponent room [req]
   (let [{:keys [user]} (:session req)
