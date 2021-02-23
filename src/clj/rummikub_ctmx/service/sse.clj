@@ -1,7 +1,9 @@
 (ns rummikub-ctmx.service.sse
   (:require
+    [clojure.string :as string]
     [hiccup.core :as hiccup]
-    [org.httpkit.server :as httpkit]))
+    [org.httpkit.server :as httpkit]
+    [rummikub-ctmx.util :as util]))
 
 (defonce connections (atom {}))
 
@@ -34,3 +36,9 @@
 
 (def refresh (partial send-script! "location.reload();"))
 (def refresh-all (partial send-script-all! "location.reload();"))
+
+(defmacro apply-remote [f & args]
+  `(->> ~(vec args)
+        (map util/write-str)
+        (string/join ", ")
+        (format "%s(%s)" ~(str f))))
