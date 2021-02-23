@@ -15,10 +15,7 @@
                            :display "inline-block"})
 
 (defn tile [i [[color number _] [x y]]]
-  (let [n (string/join "-"
-                       (if (= :joker number)
-                         [i (name color) "joker"]
-                         [i (name color) number _]))
+  (let [n (string/join "-" [i (name color) number _])
         color (case color :yellow "gold" (name color))
         style (assoc base-style :color color)
         style (if x
@@ -26,7 +23,7 @@
                 style)]
     [:div.text-center.tile {:id n :style (util/fmt-style style)}
      [:input {:type "hidden" :name n}]
-     (case number :joker ":)" number)]))
+     (case number 0 ":)" number)]))
 
 (defn- board-row [i tiles]
   [:div {:id (str "board" i) :style "border: 1px solid black; height: 60px"}

@@ -14,3 +14,6 @@
   (into {}
         (for [[k v] m :when (f v)]
           [k v])))
+
+(defn map-vals [f m]
+  (zipmap (keys m) (map f (vals m))))

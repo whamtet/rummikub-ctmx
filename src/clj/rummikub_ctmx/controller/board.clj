@@ -4,11 +4,8 @@
     [rummikub-ctmx.service.state :as state]))
 
 (defn- parse-tile [s]
-  (let [[_ a b c] (.split s "-")
-        a (keyword a)
-        b (case b "joker" :joker (Long/parseLong b))
-        c (some-> c Long/parseLong)]
-    [a b c]))
+  (let [[_ a b c] (.split s "-")]
+    [(keyword a) (Long/parseLong b) (Long/parseLong c)]))
 (defn- parse-coord [s]
   (let [[a b] (.split s ", ")]
     [(Double/parseDouble a) (Double/parseDouble b)]))

@@ -5,9 +5,6 @@
 
 (def colors [:red :yellow :blue :black])
 (def numbers (range 1 14))
-
-(defn num-val [[_ num]]
-  (cond num :joker 30 num))
 (defn enumerate [s]
   (map-indexed list s))
 
@@ -15,7 +12,7 @@
   (concat
     (for [color colors number numbers i (range 2)]
       [color number i])
-    [[:red :joker] [:black :joker]]))
+    [[:red 0 0] [:black 0 0]]))
 
 (defonce state
   (atom
@@ -33,10 +30,10 @@
 
 (defn sort-tiles [player tiles]
   (let [{:keys [red yellow blue black]} (group-by first tiles)
-        red (sort-by num-val red)
-        yellow (sort-by num-val yellow)
-        blue (sort-by num-val blue)
-        black (sort-by num-val black)
+        red (sort-by second red)
+        yellow (sort-by second yellow)
+        blue (sort-by second blue)
+        black (sort-by second black)
         first-row (concat red yellow)
         second-row (concat blue black)]
     (into {}
@@ -131,3 +128,11 @@
           (sort-by #(-> % second third))
           (reduce (fn [m [tile [_ i]]]
                     (update m i conj tile)) [[] []]))}))
+
+(defn swap-players [s player1 player2]
+  (let [player-swap #({player1 player2 player2 player1} % %)]
+    (update s :players
+            (fn [players]
+              (util/map-vals #(update % 0 player-swap) players)))))
+(defn swap-players! [player1 player2]
+  (swap! state swap-players player1 player2))
