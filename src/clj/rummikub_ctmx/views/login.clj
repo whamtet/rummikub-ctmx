@@ -11,6 +11,7 @@
         (assoc ctmx.response/hx-refresh :session {:user user})
         [:form {:hx-post "login"}
          [:h3 "Rummikub Login"]
+         [:h6.mt-3 "Built with " [:a {:href "https://ctmx.info" :_target "blank"} "CTMX"] ". Light, fast, secure"]
          [:div.form-group.mt-4
           [:label "Username"]
           [:input.form-control

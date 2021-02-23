@@ -36,20 +36,35 @@
   [:div {:style "height: 400px"}
    (map #(tile 2 %) table-tiles)])
 
-(ctmx/defcomponent ^:endpoint play-area [req]
+(defn buttons [hash]
+  [:div.mb-2
+   [:button.btn.btn-primary.mr-2
+    {:hx-post "play-area"
+     :hx-target hash
+     :hx-vals (util/write-str {:command "pick-up"})}
+    "Pick Up"]
+   [:button.btn.btn-primary
+    {:hx-post "play-area"
+     :hx-target hash
+     :hx-vals (util/write-str {:command "sort"})}
+    "Sort"]])
+
+(ctmx/defcomponent ^:endpoint play-area [req command]
   (ctmx/with-req req
     (when patch?
       (board/update-board req))
     (let [user (-> req :session :user)
+          _ (when post? (board/sort-tray user command))
           {table-tiles :table rows :rows} (state/player-state user)]
       [:form.play-area {:id id :hx-patch "play-area"}
-       [:div {:hx-post "play-area"
+       [:div {:hx-put "play-area"
               :hx-trigger "sse:play-area"
               :hx-target (hash ".")}]
        [:input#drop-row {:type "hidden" :name "drop-row"}]
        [:input#drop-tile {:type "hidden" :name "drop-tile"}]
        [:input#play-area-submit.d-none {:type "submit"}]
        (table-div table-tiles)
+       (buttons (hash "."))
        (map-indexed board-row rows)])))
 
 (ctmx/defcomponent room [req]

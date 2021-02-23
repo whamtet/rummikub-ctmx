@@ -53,7 +53,7 @@
 (defn sort-player! [player]
   (swap! state sort-player player))
 
-(def to-take 2)
+(def to-take 14)
 (defn pick-up [{:keys [pool players table]} player]
   (assert (every? #(-> % second first (not= player)) players))
   (let [to-pick (->> pool shuffle (take to-take))

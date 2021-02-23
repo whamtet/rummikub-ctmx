@@ -10,7 +10,7 @@
     :invalid-password
     (try
       (state/pick-up-new! user)
-      (sse/refresh "Matt")
+      (sse/refresh-all)
       :ok
       (catch AssertionError e :user-exists))))
 

@@ -27,4 +27,9 @@
     (if (= 2 i)
       (state/put-down! tile x y)
       (state/pick-up-used! row user i))
-    (sse/send-event-all! "play-area" user)))
+    (sse/play-all user)))
+
+(defn sort-tray [user command]
+  (case command
+    "pick-up" (state/pick-up-one! user)
+    "sort" (state/sort-player! user)))
