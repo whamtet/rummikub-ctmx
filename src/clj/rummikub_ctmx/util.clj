@@ -4,9 +4,9 @@
     [clojure.string :as string]))
 
 (defn fmt-style [style]
-  (->> style
-       (map (fn [[k v]] (str (name k) ": " v)))
-       (string/join "; ")))
+  (string/join "; "
+               (for [[k v] style :when v]
+                 (str (name k) ": " v))))
 
 (def write-str json/write-str)
 

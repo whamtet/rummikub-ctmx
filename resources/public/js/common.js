@@ -19,11 +19,8 @@ function dragMoveListener (event) {
 
 // interact('#table').dropzone();
 interact('.tile').draggable({
-  // enable autoScroll
   autoScroll: true,
-
   listeners: {
-    // call this function on every dragmove event
     move: dragMoveListener,
   }
 });
@@ -33,18 +30,12 @@ const setPosition = el => {
   el.children[0].value = position.x + ', ' + position.y;
 }
 
-interact('#table').dropzone({
-  ondrop: function() {
-    console.log('drop table');
-  }
-});
-
 const dropRow = (row) => (e) => {
   const dropped = e.dragEvent.target;
   document.querySelector('#drop-row').value = row;
   document.querySelector('#drop-tile').value = dropped.id;
-  document.querySelectorAll('.board .tile').forEach(setPosition);
-  document.querySelector('#board-submit').click();
+  document.querySelectorAll('.play-area .tile').forEach(setPosition);
+  document.querySelector('#play-area-submit').click();
 };
 
 interact('#board0').dropzone({
@@ -53,4 +44,8 @@ interact('#board0').dropzone({
 
 interact('#board1').dropzone({
   ondrop: dropRow(1)
+});
+
+interact('#table').dropzone({
+  ondrop: dropRow(2)
 });
