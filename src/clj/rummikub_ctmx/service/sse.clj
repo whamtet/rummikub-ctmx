@@ -12,7 +12,7 @@
 (defn remove-connection [user]
   (swap! connections dissoc user))
 
-(defn- msg-str [event]
+(defn- event-str [event]
   (format "event: %s\ndata: \n\n" event))
 (defn- script-str [script]
   (format "event: script\ndata: %s\n\n" (hiccup/html [:script script])))
@@ -31,8 +31,13 @@
 
 (defn send-script! [script & recipients]
   (send! (script-str script) recipients))
-(defn send-script-all! [script & recipients]
-  (send-all! (script-str script) recipients))
+(defn send-script-all! [script & exceptions]
+  (send-all! (script-str script) exceptions))
+
+(defn send-event! [event & recipients]
+  (send! (event-str event) recipients))
+(defn send-event-all! [event & exceptions]
+  (send-all! (event-str event) exceptions))
 
 (def refresh (partial send-script! "location.reload();"))
 (def refresh-all (partial send-script-all! "location.reload();"))

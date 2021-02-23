@@ -12,30 +12,29 @@
                            :height "3em"
                            :border "1px solid grey"
                            :margin "5px"
-                           :display "inline-block"
-                           :position "absolute"})
+                           :display "inline-block"})
 
-(defn tile [[[color number _] [x y]]]
+(defn tile [i [[color number _] [x y]]]
   (let [n (string/join "-"
                        (if (= :joker number)
-                         [(name color) "joker"]
-                         [(name color) number _]))
+                         [i (name color) "joker"]
+                         [i (name color) number _]))
         color (case color :yellow "gold" (name color))
-        left (some-> x (str "px"))
-        top (some-> y (str "px"))
-        style (util/fmt-style
-                (assoc base-style :color color :left left :top top))]
-    [:div.text-center.tile {:id n :style style}
+        style (assoc base-style :color color)
+        style (if x
+                (assoc style :left (str x "px") :top (str y "px") :position "absolute")
+                style)]
+    [:div.text-center.tile {:id n :style (util/fmt-style style)}
      [:input {:type "hidden" :name n}]
      (case number :joker ":)" number)]))
 
 (defn- board-row [i tiles]
   [:div {:id (str "board" i) :style "border: 1px solid black; height: 60px"}
-   (map #(-> % list tile) tiles)])
+   (map #(tile i (list %)) tiles)])
 
 (defn table-div [table-tiles]
-  [:div#table {:style "height: 450px"}
-   (map tile table-tiles)])
+  [:div {:style "height: 400px"}
+   (map #(tile 2 %) table-tiles)])
 
 (ctmx/defcomponent ^:endpoint play-area [req]
   (ctmx/with-req req
@@ -44,6 +43,9 @@
     (let [user (-> req :session :user)
           {table-tiles :table rows :rows} (state/player-state user)]
       [:form.play-area {:id id :hx-patch "play-area"}
+       [:div {:hx-post "play-area"
+              :hx-trigger "sse:play-area"
+              :hx-target (hash ".")}]
        [:input#drop-row {:type "hidden" :name "drop-row"}]
        [:input#drop-tile {:type "hidden" :name "drop-tile"}]
        [:input#play-area-submit.d-none {:type "submit"}]

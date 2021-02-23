@@ -80,22 +80,14 @@
 (defn put-down! [tile x y]
   (swap! state put-down tile x y))
 
-(defn insert-at [s i tile]
-  (let [[before after] (split-at i s)]
-    (concat before [tile] after)))
-(defn pick-up-used [{:keys [pool players table]} tile player i j]
-  (let [insert-row (for [[t [p id]] players
-                         :when (= [p id] [player i])
-                         :when (not= t tile)] tile)
-        new-row (insert-at insert-row j tile)
-        new-players (into {}
-                          (for [[j tile] (enumerate new-row)]
-                            [tile [player i j]]))]
-    {:pool pool
-     :players (merge players new-players)
-     :table (dissoc table tile)}))
-(defn pick-up-used! [tile player i j]
-  (swap! state pick-up-used tile player i j))
+(defn pick-up-used [{:keys [pool players table]} row player i]
+  {:pool pool
+   :players (into players
+                  (for [[j tile] (enumerate row)]
+                    [tile [player i j]]))
+   :table (apply dissoc table row)})
+(defn pick-up-used! [row player i]
+  (swap! state pick-up-used row player i))
 
 (defn quit [{:keys [pool players table]} player]
   (let [to-remove (tiles-for-player player players)]

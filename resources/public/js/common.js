@@ -17,35 +17,57 @@ function dragMoveListener (event) {
   target.setAttribute('data-y', y)
 }
 
-// interact('#table').dropzone();
-interact('.tile').draggable({
-  autoScroll: true,
-  listeners: {
-    move: dragMoveListener,
-  }
-});
+function getCoords(elem) { // crossbrowser version
+  var box = elem.getBoundingClientRect();
+
+  var body = document.body;
+  var docEl = document.documentElement;
+
+  var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+  var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+  var clientTop = docEl.clientTop || body.clientTop || 0;
+  var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+  var top  = box.top +  scrollTop - clientTop;
+  var left = box.left + scrollLeft - clientLeft;
+
+  return { top: Math.round(top), left: Math.round(left) };
+}
 
 const setPosition = el => {
-  const position = el.getBoundingClientRect();
-  el.children[0].value = position.x + ', ' + position.y;
+  const position = getCoords(el);
+  el.children[0].value = position.left + ', ' + position.top;
 }
+
+const submit = () => document.querySelector('#play-area-submit').click();
 
 const dropRow = (row) => (e) => {
   const dropped = e.dragEvent.target;
   document.querySelector('#drop-row').value = row;
   document.querySelector('#drop-tile').value = dropped.id;
   document.querySelectorAll('.play-area .tile').forEach(setPosition);
-  document.querySelector('#play-area-submit').click();
+  submit();
 };
 
-interact('#board0').dropzone({
-  ondrop: dropRow(0)
-});
+const main = () => {
+  interact('.tile').draggable({
+    autoScroll: true,
+    listeners: {
+      move: dragMoveListener,
+    }
+  });
 
-interact('#board1').dropzone({
-  ondrop: dropRow(1)
-});
+  interact(document.body).dropzone({
+    ondrop: dropRow(2)
+  });
 
-interact('#table').dropzone({
-  ondrop: dropRow(2)
-});
+  interact('#board0').dropzone({
+    ondrop: dropRow(0)
+  });
+
+  interact('#board1').dropzone({
+    ondrop: dropRow(1)
+  });
+};
+main();
