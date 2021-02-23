@@ -19,8 +19,7 @@
 (ctmx/defcomponent control-panel [req user]
   [:div.float-right
    [:button.btn.btn-primary {:hx-delete "root"} "Quit"]
-   (when (= "Matt" user)
-     [:div.mt-2
-      (->> (state/users)
-           (remove #(= % "Matt"))
-           (ctmx.rt/map-indexed delete-row req))])])
+   [:div.mt-2
+    (->> (state/users)
+         (remove #(= % user))
+         (ctmx.rt/map-indexed delete-row req))]])
