@@ -18,5 +18,4 @@
 
 (defn api-routes []
   ["/api"
-   ["/sse" sse]
-   ["/refresh" (fn [_] ctmx.response/hx-refresh)]])
+   ["/sse" sse]])

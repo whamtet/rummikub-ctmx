@@ -32,7 +32,7 @@
   (let [{:keys [user]} (:session req)
         {:keys [table players]} (state/player-state user)]
     [:div {:hx-sse (str "connect:/api/sse?user=" user)}
-     [:div {:hx-get "/api/refresh" :hx-trigger "sse:refresh"}]
+     [:div {:hx-sse "swap:script" :hx-swap "innerHTML"}]
      (control-panel/control-panel req user)
      [:h2 "Welcome " user]
      (table-div table)
