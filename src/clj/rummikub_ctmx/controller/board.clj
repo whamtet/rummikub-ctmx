@@ -32,4 +32,8 @@
 (defn sort-tray [user command]
   (case command
     "pick-up" (state/pick-up-one! user)
-    "sort" (state/sort-player! user)))
+    "sort" (state/sort-player! user)
+    "next"
+    (do
+      (state/next-turn!)
+      (sse/play-all user))))

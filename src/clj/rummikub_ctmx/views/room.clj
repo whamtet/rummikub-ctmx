@@ -36,8 +36,18 @@
   [:div {:style "height: 400px"}
    (map #(tile 2 %) table-tiles)])
 
-(defn buttons [hash]
+(defn next-turn [hash current]
+  [:div.float-right
+   "Current turn: " current
+   [:button.btn.btn-primary.ml-2
+    {:hx-post "play-area"
+     :hx-target hash
+     :hx-vals (util/write-str {:command "next"})}
+    "Pass"]])
+
+(defn buttons [hash current]
   [:div.mb-2
+   (next-turn hash current)
    [:button.btn.btn-primary.mr-2
     {:hx-post "play-area"
      :hx-target hash
@@ -55,7 +65,7 @@
       (board/update-board req))
     (let [user (-> req :session :user)
           _ (when post? (board/sort-tray user command))
-          {table-tiles :table rows :rows} (state/player-state user)]
+          {table-tiles :table :keys [rows current]} (state/player-state user)]
       [:form.play-area {:id id :hx-patch "play-area"}
        [:div {:hx-put "play-area"
               :hx-trigger "sse:play-area"
@@ -64,7 +74,7 @@
        [:input#drop-tile {:type "hidden" :name "drop-tile"}]
        [:input#play-area-submit.d-none {:type "submit"}]
        (table-div table-tiles)
-       (buttons (hash "."))
+       (buttons (hash ".") current)
        (map-indexed board-row rows)])))
 
 (ctmx/defcomponent room [req]

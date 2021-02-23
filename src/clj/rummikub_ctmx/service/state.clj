@@ -54,48 +54,67 @@
   (swap! state sort-player player))
 
 (def to-take 14)
-(defn pick-up [{:keys [pool players table]} player]
+(defn pick-up [{:keys [pool players current] :as s} player]
   (assert (every? #(-> % second first (not= player)) players))
   (let [to-pick (->> pool shuffle (take to-take))
         sorted (sort-tiles player to-pick)]
-    {:pool (set/difference pool (set to-pick))
-     :players (merge players sorted)
-     :table table}))
-(defn pick-up-one [{:keys [pool players table]} player]
+    (assoc s
+      :pool (set/difference pool (set to-pick))
+      :players (merge players sorted)
+      :current (or current player))))
+(defn pick-up-one [{:keys [pool players] :as s} player]
   (let [to-pick (-> pool seq rand-nth)
         first-row (for [[tile [p i]] players :when (= [p i] [player 0])] tile)]
-    {:pool (disj pool to-pick)
-     :players (assoc players to-pick [player 0 (-> first-row count inc)])
-     :table table}))
+    (assoc s
+      :pool (disj pool to-pick)
+      :players (assoc players to-pick [player 0 (-> first-row count inc)]))))
 
 (defn pick-up-new! [player]
   (swap! state pick-up player))
 (defn pick-up-one! [player]
   (swap! state pick-up-one player))
 
-(defn put-down [{:keys [pool players table]} tile x y]
-  {:pool pool
-   :players (dissoc players tile)
-   :table (assoc table tile [x y])})
+(defn put-down [{:keys [players table] :as s} tile x y]
+  (assoc s
+    :players (dissoc players tile)
+    :table (assoc table tile [x y])))
 (defn put-down! [tile x y]
   (swap! state put-down tile x y))
 
-(defn pick-up-used [{:keys [pool players table]} row player i]
-  {:pool pool
-   :players (into players
-                  (for [[j tile] (enumerate row)]
-                    [tile [player i j]]))
-   :table (apply dissoc table row)})
+(defn pick-up-used [{:keys [players table] :as s} row player i]
+  (assoc s
+    :players (into players
+                   (for [[j tile] (enumerate row)]
+                     [tile [player i j]]))
+    :table (apply dissoc table row)))
 (defn pick-up-used! [row player i]
   (swap! state pick-up-used row player i))
 
-(defn quit [{:keys [pool players table]} player]
-  (let [to-remove (tiles-for-player player players)]
-    {:pool (set/union pool (set to-remove))
-     :players (apply dissoc players to-remove)
-     :table table}))
+(defn- next-player [players current]
+  (let [all (->> players vals (map first) set)]
+    (case (count all)
+      0 nil
+      1 (first all)
+      (->> (conj all current)
+           sort
+           cycle
+           (drop-while #(not= % current))
+           second))))
+
+(defn quit [{:keys [pool players current] :as s} player]
+  (let [to-remove (tiles-for-player player players)
+        players (apply dissoc players to-remove)]
+    (assoc s
+      :pool (set/union pool (set to-remove))
+      :players players
+      :current (next-player players current))))
 (defn quit! [player]
   (swap! state quit player))
+
+(defn next-turn [s]
+  (assoc s :current (next-player (:players s) (:current s))))
+(defn next-turn! []
+  (swap! state next-turn))
 
 (defn users []
   (->> @state :players vals (map first) set))
@@ -103,8 +122,9 @@
 (defn third [x]
   (get x 2))
 (defn player-state [player]
-  (let [{:keys [players table]} @state]
+  (let [{:keys [players table current]} @state]
     {:table table
+     :current current
      :rows
      (->> players
           (filter #(-> % second first (= player)))
