@@ -16,10 +16,18 @@
             :hx-confirm (format "Delete %s?" user)}
         user]])))
 
-(ctmx/defcomponent control-panel [req user]
-  [:div.float-right
-   [:button.btn.btn-primary {:hx-delete "root"} "Quit"]
-   [:div.mt-2
-    (->> (state/users)
-         (remove #(= % user))
-         (ctmx.rt/map-indexed delete-row req))]])
+(ctmx/defcomponent ^:endpoint control-panel [req user]
+  (ctmx/with-req req
+    (if delete?
+      (login/reset-game)
+      [:div.float-right
+       [:button.btn.btn-primary
+        {:hx-delete "root"
+         :hx-confirm "Quit?"} "Quit"] [:br]
+       [:button.btn.btn-primary.mt-2
+        {:hx-delete "control-panel"
+         :hx-confirm "Reset Game?"} "Reset"]
+       [:div.mt-2
+        (->> (state/users)
+             (remove #(= % user))
+             (ctmx.rt/map-indexed delete-row req))]])))

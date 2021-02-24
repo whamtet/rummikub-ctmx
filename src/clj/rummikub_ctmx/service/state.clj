@@ -136,3 +136,14 @@
               (util/map-vals #(update % 0 player-swap) players)))))
 (defn swap-players! [player1 player2]
   (swap! state swap-players player1 player2))
+
+(defn reset-game [s]
+  (let [player-names (->> s :players vals (map first) distinct)]
+    (reduce
+      pick-up
+      {:pool (set tiles)
+       :players {}
+       :table {}}
+      player-names)))
+(defn reset-game! []
+  (swap! state reset-game))

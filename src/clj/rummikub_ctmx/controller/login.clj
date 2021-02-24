@@ -27,3 +27,8 @@
   (store/destroy-user user)
   (sse/refresh-all)
   nil)
+
+(defn reset-game []
+  (state/reset-game!)
+  (sse/refresh-all)
+  nil)
