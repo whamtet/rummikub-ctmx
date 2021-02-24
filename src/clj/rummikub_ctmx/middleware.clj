@@ -39,7 +39,7 @@
 
 (defn redirect-http [handler]
   (fn [req]
-    (if-let [url (and (-> req :scheme (= :http)) (:URL env))]
+    (if-let [url (and (-> req :scheme (= :http)) (:url env))]
       (response/redirect url)
       (handler req))))
 
