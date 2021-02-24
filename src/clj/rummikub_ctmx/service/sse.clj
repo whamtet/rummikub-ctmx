@@ -42,6 +42,7 @@
 (def refresh (partial send-script! "location.reload();"))
 (def refresh-all (partial send-script-all! "location.reload();"))
 (def play-all (partial send-event-all! "play-area"))
+(def pass-all (partial send-script-all! "pass();"))
 
 (defmacro apply-remote [f & args]
   `(->> ~(vec args)

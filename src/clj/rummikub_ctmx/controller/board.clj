@@ -33,4 +33,5 @@
     "next"
     (do
       (state/next-turn!)
-      (sse/play-all user))))
+      (sse/play-all user)
+      (sse/pass-all user))))
