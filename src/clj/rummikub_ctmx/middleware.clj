@@ -8,7 +8,8 @@
     [muuntaja.middleware :refer [wrap-format wrap-params]]
     [rummikub-ctmx.config :refer [env]]
     [rummikub-ctmx.middleware.store :refer [store]]
-    [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
+    [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
+    [ring.util.response :as response]))
 
 (defn wrap-internal-error [handler]
   (fn [req]
@@ -36,10 +37,17 @@
       ;; since they're not compatible with this middleware
       ((if (:websocket? request) handler wrapped) request))))
 
+(defn redirect-http [handler]
+  (fn [req]
+    (if-let [url (and (-> req :scheme (= :http)) (:URL env))]
+      (response/redirect url)
+      (handler req))))
+
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
       (wrap-defaults
         (-> site-defaults
             (assoc-in [:security :anti-forgery] false)
             (assoc-in  [:session :store] store)))
+      redirect-http
       wrap-internal-error))
