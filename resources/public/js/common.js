@@ -35,19 +35,27 @@ function getCoords(elem) { // crossbrowser version
   return { top: Math.round(top), left: Math.round(left) };
 }
 
-const setPosition = el => {
+const getPosition = el => {
   const position = getCoords(el);
-  el.children[0].value = position.left + ', ' + position.top;
-}
-
-const submit = () => document.querySelector('#play-area-submit').click();
+  return position.left + ', ' + position.top;
+};
+const setPosition = el => el.children[0].value = getPosition(el);
 
 const dropRow = (row) => (e) => {
   const dropped = e.dragEvent.target;
-  document.querySelector('#drop-row').value = row;
-  document.querySelector('#drop-tile').value = dropped.id;
-  document.querySelectorAll('.play-area .tile').forEach(setPosition);
-  submit();
+  document.querySelectorAll(`.board${row} .tile`).forEach(setPosition);
+  const form = document.querySelector(`.board${row}`);
+  const [position, tile, submit] = form.children;
+  position.value = getPosition(dropped);
+  tile.value = dropped.id;
+  dropped.remove();
+  submit.click();
+};
+
+const dropBody = (e) => {
+  const dropped = e.dragEvent.target;
+  setPosition(dropped);
+  dropped.children[1].click();
 };
 
 const main = () => {
@@ -59,14 +67,14 @@ const main = () => {
   });
 
   interact(document.body).dropzone({
-    ondrop: dropRow(2)
+    ondrop: dropBody
   });
 
-  interact('#board0').dropzone({
+  interact('.board0').dropzone({
     ondrop: dropRow(0)
   });
 
-  interact('#board1').dropzone({
+  interact('.board1').dropzone({
     ondrop: dropRow(1)
   });
 };

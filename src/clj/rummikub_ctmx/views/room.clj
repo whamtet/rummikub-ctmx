@@ -13,25 +13,40 @@
                            :border "1px solid grey"
                            :margin "5px"
                            :display "inline-block"})
+(defn tile-style [color x y]
+  (util/fmt-style
+    (if x
+      (assoc base-style :color color :left (str x "px") :top (str y "px") :position "absolute")
+      (assoc base-style :color color))))
 
-(defn tile [i [[color number _] [x y]]]
-  (let [n (string/join "-" [i (name color) number _])
-        color (case color :yellow "gold" (name color))
-        style (assoc base-style :color color)
-        style (if x
-                (assoc style :left (str x "px") :top (str y "px") :position "absolute")
-                style)]
-    [:div.text-center.tile {:id n :style (util/fmt-style style)}
-     [:input {:type "hidden" :name n}]
-     (case number 0 ":)" number)]))
+(ctmx/defcomponent ^:endpoint tile [req _ [[color number suffix] [x y]]]
+  (ctmx/with-req req
+    (if (and patch? top-level?)
+      (board/update-table req)
+      (let [n (string/join "-" [(name color) number suffix])
+            color (case color :yellow "gold" (name color))]
+        [:div.text-center.tile {:id n :style (tile-style color x y)}
+         [:input {:type "hidden" :name "position"}]
+         [:div {:hx-patch "tile" :hx-include (format "#%s input" n)}]
+         [:input {:type "hidden" :name "tile" :value n}]
+         (case number 0 ":)" number)]))))
 
-(defn- board-row [i tiles]
-  [:div {:id (str "board" i) :style "border: 1px solid black; min-height: 60px"}
-   (map #(tile i (list %)) tiles)])
-
-(defn table-div [table-tiles]
+(ctmx/defcomponent table-div [req table-tiles]
   [:div {:style "height: 400px"}
-   (map #(tile 2 %) table-tiles)])
+   (ctmx.rt/map-indexed tile req table-tiles)])
+
+(ctmx/defcomponent ^:endpoint board-row [req ^:int i tiles]
+  [:div {:id id
+         :class (str "board" i)
+         :style "border: 1px solid black; min-height: 60px"}
+   [:input {:type "hidden" :name "position"}]
+   [:input {:type "hidden" :name "tile"}]
+   [:div {:hx-patch "board-row" :hx-target (hash ".") :hx-include (format ".board%s input" i)}]
+   [:input {:type "hidden" :name "i" :value i}]
+   (ctmx.rt/map-indexed
+     #(tile %1 %2 [%3])
+     req
+     (or tiles (board/drop-into-board req i)))])
 
 (defn next-turn [hash current]
   [:div.float-right
@@ -59,21 +74,16 @@
 
 (ctmx/defcomponent ^:endpoint play-area [req command]
   (ctmx/with-req req
-    (when patch?
-      (board/update-board req))
     (let [user (-> req :session :user)
           _ (when post? (board/sort-tray user command))
           {table-tiles :table :keys [rows current]} (state/player-state user)]
-      [:form.play-area {:id id :hx-patch "play-area"}
+      [:div.play-area {:id id}
        [:div {:hx-put "play-area"
               :hx-trigger "sse:play-area"
               :hx-target (hash ".")}]
-       [:input#drop-row {:type "hidden" :name "drop-row"}]
-       [:input#drop-tile {:type "hidden" :name "drop-tile"}]
-       [:input#play-area-submit.d-none {:type "submit"}]
-       (table-div table-tiles)
+       (table-div req table-tiles)
        (buttons (hash ".") current)
-       (map-indexed board-row rows)])))
+       (ctmx.rt/map-indexed board-row req rows)])))
 
 (ctmx/defcomponent room [req]
   (let [{:keys [user]} (:session req)]

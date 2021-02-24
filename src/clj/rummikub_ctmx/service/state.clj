@@ -75,7 +75,7 @@
   (assoc s
     :players (dissoc players tile)
     :table (assoc table tile [x y])))
-(defn put-down! [tile x y]
+(defn put-down! [tile [x y]]
   (swap! state put-down tile x y))
 
 (defn pick-up-used [{:keys [players table] :as s} row player i]
@@ -147,3 +147,8 @@
       player-names)))
 (defn reset-game! []
   (swap! state reset-game))
+
+(defn save-state []
+  (spit "save.edn" (pr-str @state)))
+(defn load-state []
+  (->> "save.edn" slurp read-string (reset! state)))

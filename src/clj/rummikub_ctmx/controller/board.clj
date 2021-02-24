@@ -1,30 +1,34 @@
 (ns rummikub-ctmx.controller.board
   (:require
+    [ctmx.core :refer [defn-parse]]
     [rummikub-ctmx.service.sse :as sse]
     [rummikub-ctmx.service.state :as state]))
 
 (defn- parse-tile [s]
-  (let [[_ a b c] (.split s "-")]
+  (let [[a b c] (.split s "-")]
     [(keyword a) (Long/parseLong b) (Long/parseLong c)]))
 (defn- parse-coord [s]
   (let [[a b] (.split s ", ")]
     [(Double/parseDouble a) (Double/parseDouble b)]))
+(def ^:private parse-left #(-> % parse-coord first))
 
-(defn update-board [{:keys [session params]}]
-  (let [{:keys [drop-tile drop-row]} params
-        {:keys [user]} session
-        tile (parse-tile drop-tile)
-        [x y] (-> drop-tile params parse-coord)
-        valid-key? #(or (= % drop-tile) (and (string? %) (.startsWith % drop-row)))
-        row (->> params
-                 (filter #(-> % first valid-key?))
-                 (sort-by #(-> % second parse-coord first))
-                 (map #(-> % first parse-tile)))
-        i (Long/parseLong drop-row)]
-    (if (= 2 i)
-      (state/put-down! tile x y)
-      (state/pick-up-used! row user i))
+(defn update-table [{:keys [session params]}]
+  (let [{:keys [tile position]} params
+        {:keys [user]} session]
+    (state/put-down! (parse-tile tile) (parse-coord position))
     (sse/play-all user)))
+
+(defn-parse drop-into-board [{{:keys [^:array position ^:array tile]} :params
+                              {:keys [user]} :session}
+                             i]
+  (let [lefts (map parse-left position)
+        tiles (map parse-tile tile)
+        row (->> (map list tiles lefts)
+                 (sort-by second)
+                 (map first))]
+    (state/pick-up-used! row user i)
+    (sse/play-all user)
+    row))
 
 (defn sort-tray [user command]
   (case command
