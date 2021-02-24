@@ -18,4 +18,5 @@
 
 (defn api-routes []
   ["/api"
+   ["" (fn [req] (->> req pr-str (assoc {:status 200 :headers {"Content-Type" "text/plain"}} :body)))]
    ["/sse" sse]])

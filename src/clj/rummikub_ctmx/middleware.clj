@@ -49,5 +49,5 @@
         (-> site-defaults
             (assoc-in [:security :anti-forgery] false)
             (assoc-in  [:session :store] store)))
-      redirect-http
+      ;redirect-http
       wrap-internal-error))
