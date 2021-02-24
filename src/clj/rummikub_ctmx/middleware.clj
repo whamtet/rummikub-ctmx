@@ -39,7 +39,7 @@
 
 (defn redirect-http [handler]
   (fn [req]
-    (if-let [url (and (-> req :scheme (= :http)) (:url env))]
+    (if-let [url (and (-> req :headers (get "x-forwarded-proto") (= "http")) (:url env))]
       (response/redirect url)
       (handler req))))
 
@@ -49,5 +49,5 @@
         (-> site-defaults
             (assoc-in [:security :anti-forgery] false)
             (assoc-in  [:session :store] store)))
-      ;redirect-http
+      redirect-http
       wrap-internal-error))
