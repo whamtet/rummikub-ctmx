@@ -2,6 +2,7 @@
   (:require
     ctmx.response
     [rummikub-ctmx.middleware.store :as store]
+    [rummikub-ctmx.service.name :as name]
     [rummikub-ctmx.service.sse :as sse]
     [rummikub-ctmx.service.state :as state]))
 
@@ -9,9 +10,10 @@
   (if (not= "rummikub" (some-> password .toLowerCase))
     :invalid-password
     (try
-      (state/pick-up-new! user)
-      (sse/refresh-all user)
-      :ok
+      (let [user (or (not-empty user) (name/new-name))]
+        (state/pick-up-new! user)
+        (sse/refresh-all user)
+        user)
       (catch AssertionError e :user-exists))))
 
 (defn quit [req]
