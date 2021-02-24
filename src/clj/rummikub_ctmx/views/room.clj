@@ -26,7 +26,7 @@
      (case number 0 ":)" number)]))
 
 (defn- board-row [i tiles]
-  [:div {:id (str "board" i) :style "border: 1px solid black; height: 60px"}
+  [:div {:id (str "board" i) :style "border: 1px solid black; min-height: 60px"}
    (map #(tile i (list %)) tiles)])
 
 (defn table-div [table-tiles]
