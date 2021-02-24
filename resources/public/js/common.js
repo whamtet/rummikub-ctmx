@@ -71,3 +71,13 @@ const main = () => {
   });
 };
 main();
+
+function playSound(url) {
+    var a = new Audio(url);
+    a.play();
+}
+
+const pass = () => {
+  const i = Math.floor(Math.random() * 16);
+  playSound(`/pass${i}.mp4`);
+};

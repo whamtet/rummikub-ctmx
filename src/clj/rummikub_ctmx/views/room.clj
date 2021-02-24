@@ -39,6 +39,7 @@
    [:button.btn.btn-primary.ml-2
     {:hx-post "play-area"
      :hx-target hash
+     :onclick "pass()"
      :hx-vals (util/write-str {:command "next"})}
     "Pass"]])
 
