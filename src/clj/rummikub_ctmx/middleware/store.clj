@@ -28,3 +28,10 @@
            (util/filter-vals
              #(-> % :user (not= user))
              m))))
+
+(defn get-users []
+  (->> @store-atom
+       vals
+       (map :user)
+       (filter identity)
+       set))

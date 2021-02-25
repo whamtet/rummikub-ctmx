@@ -1,8 +1,10 @@
 (ns rummikub-ctmx.service.sse
   (:require
+    [clojure.set :as set]
     [clojure.string :as string]
     [hiccup.core :as hiccup]
     [org.httpkit.server :as httpkit]
+    [rummikub-ctmx.middleware.store :as store]
     [rummikub-ctmx.util :as util]))
 
 (defonce connections (atom {}))
@@ -17,17 +19,23 @@
 (defn- script-str [script]
   (format "event: script\ndata: %s\n\n" (hiccup/html [:script script])))
 
-(defn send! [event recipients]
-  (doseq [recipient recipients
-          :let [connection (@connections recipient)]
-          :when connection]
-    (httpkit/send! connection event false)))
+(defn- send-retry
+  ([e recipients]
+   (when (not-empty recipients)
+     (future (send-retry e recipients 10))))
+  ([e recipients retries]
+   (let [available @connections
+         leftovers (set/difference recipients (set (keys available)))]
+     (doseq [[user connection] available :when (recipients user)]
+       (httpkit/send! connection e false))
+     (when (and (pos? retries) (not-empty leftovers))
+       (Thread/sleep 500)
+       (recur e leftovers (dec retries))))))
 
+(defn send! [event recipients]
+  (send-retry event (set/union (set recipients) (store/get-users))))
 (defn send-all! [event exceptions]
-  (let [exceptions (set exceptions)]
-    (doseq [[user connection] @connections
-            :when (-> user exceptions not)]
-      (httpkit/send! connection event false))))
+  (send-retry event (set/difference (store/get-users) (set exceptions))))
 
 (defn send-script! [script & recipients]
   (send! (script-str script) recipients))
