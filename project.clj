@@ -27,7 +27,8 @@
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.33"]
                  [hiccup "1.0.5"]
-                 [ctmx "0.1.0-SNAPSHOT"]]
+                 [ctmx "0.1.0-SNAPSHOT"]
+                 [nrepl/drawbridge "0.2.1" :exclusions [[org.clojure/clojure]]]]
 
   :min-lein-version "2.0.0"
 

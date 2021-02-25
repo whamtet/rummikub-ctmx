@@ -43,6 +43,24 @@
       (response/redirect url)
       (handler req))))
 
+(require '[drawbridge.core :refer [ring-handler]])
+(require '[ring.middleware.keyword-params :refer [wrap-keyword-params]])
+(require '[ring.middleware.nested-params :refer [wrap-nested-params]])
+(require '[ring.middleware.params])
+(require '[ring.middleware.session :refer [wrap-session]])
+(def drawbridge-handler
+  (-> (ring-handler)
+      (wrap-keyword-params)
+      (wrap-nested-params)
+      (ring.middleware.params/wrap-params)
+      (wrap-session)))
+
+(defn wrap-drawbridge [handler]
+  (fn [req]
+    (if (= "/repl" (:uri req))
+      (drawbridge-handler req)
+      (handler req))))
+
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
       (wrap-defaults
@@ -50,4 +68,5 @@
             (assoc-in [:security :anti-forgery] false)
             (assoc-in  [:session :store] store)))
       redirect-http
+      wrap-drawbridge
       wrap-internal-error))
