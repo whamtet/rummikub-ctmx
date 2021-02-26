@@ -16,7 +16,8 @@
   (let [{:keys [tile position]} params
         {:keys [user]} session]
     (state/put-down! (parse-tile tile) (parse-coord position))
-    (sse/play-all user)))
+    (sse/play-all user)
+    nil))
 
 (defn-parse drop-into-board [{{:keys [^:array position ^:array tile]} :params
                               {:keys [user]} :session}
@@ -38,4 +39,5 @@
     (do
       (state/next-turn!)
       (sse/play-all user)
-      (sse/pass-all user))))
+      (sse/pass-all user)
+      nil)))
