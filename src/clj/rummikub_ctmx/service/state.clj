@@ -60,11 +60,13 @@
       :players (merge players sorted)
       :current (or current player))))
 (defn pick-up-one [{:keys [pool players] :as s} player]
-  (let [to-pick (-> pool seq rand-nth)
-        first-row (for [[tile [p i]] players :when (= [p i] [player 0])] tile)]
-    (assoc s
-      :pool (disj pool to-pick)
-      :players (assoc players to-pick [player 0 (-> first-row count inc)]))))
+  (if (empty? pool)
+    s
+    (let [to-pick (-> pool seq rand-nth)
+          first-row (for [[tile [p i]] players :when (= [p i] [player 0])] tile)]
+      (assoc s
+        :pool (disj pool to-pick)
+        :players (assoc players to-pick [player 0 (-> first-row count inc)])))))
 
 (defn pick-up-new! [player]
   (swap! state pick-up player))

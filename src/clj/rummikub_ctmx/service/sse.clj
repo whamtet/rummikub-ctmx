@@ -22,7 +22,7 @@
 (defn- send-retry
   ([e recipients]
    (when (not-empty recipients)
-     (future (send-retry e recipients 10))))
+     (future (send-retry e recipients 19))))
   ([e recipients retries]
    (let [available @connections
          leftovers (set/difference recipients (set (keys available)))]
