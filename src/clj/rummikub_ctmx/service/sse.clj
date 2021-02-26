@@ -4,7 +4,7 @@
     [clojure.string :as string]
     [hiccup.core :as hiccup]
     [org.httpkit.server :as httpkit]
-    [rummikub-ctmx.middleware.store :as store]
+    [rummikub-ctmx.service.state :as state]
     [rummikub-ctmx.util :as util]))
 
 (defonce connections (atom {}))
@@ -33,9 +33,9 @@
        (recur e leftovers (dec retries))))))
 
 (defn send! [event recipients]
-  (send-retry event (set/union (set recipients) (store/get-users))))
+  (send-retry event (set/union (set recipients) (state/users))))
 (defn send-all! [event exceptions]
-  (send-retry event (set/difference (store/get-users) (set exceptions))))
+  (send-retry event (set/difference (state/users) (set exceptions))))
 
 (defn send-script! [script & recipients]
   (send! (script-str script) recipients))
