@@ -53,4 +53,4 @@
 (def pass-all (partial send-script-all! "pass();"))
 
 (defn rummikub! [user]
-  (send-script-all! (format "alert('%s says Rummikub!');" user)))
+  (send-script-all! (format "rummikub('%s');" user)))

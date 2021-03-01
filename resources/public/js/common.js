@@ -99,3 +99,9 @@ const pass = () => {
   const i = Math.max(0, Math.floor(Math.random() * 100) - 84);
   playSound(`/pass${i}.mp4`);
 };
+
+const rummikub = user => {
+  const i = Math.floor(Math.random() * 7);
+  playSound(`/win${i}.mp4`);
+  alert(`${user} says: Rummikub!`);
+};
