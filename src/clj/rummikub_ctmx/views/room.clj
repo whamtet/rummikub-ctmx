@@ -19,10 +19,33 @@
       (assoc base-style :color color :left (str x "px") :top (str y "px") :position "absolute")
       (assoc base-style :color color))))
 
+(defn rummikub [empty?]
+  [:button#rummikub
+   {:hx-post "play-area"
+    :hx-target hash
+    :class [:btn :btn-danger (when-not empty? :d-none)]
+    :hx-vals {:command "rummikub"}}
+   "Rummikub!"])
+
+(defn- rummikub-oob [req]
+  (as-> req $
+        (:session $)
+        (:user $)
+        (state/player-state $)
+        (:rows $)
+        (apply concat $)
+        (empty? $)
+        (rummikub $)
+        (assoc-in $ [1 :hx-swap-oob] "true")))
+
+(defn- tile-update [req]
+  (board/update-table req)
+  (rummikub-oob req))
+
 (ctmx/defcomponent ^:endpoint tile [req _ [[color number suffix] [x y]]]
   (ctmx/with-req req
     (if (and patch? top-level?)
-      (board/update-table req)
+      (tile-update req)
       (let [n (string/join "-" [(name color) number suffix])
             color (case color :yellow "gold" (name color))]
         [:div.text-center.tile {:id n :style (tile-style color x y)}
@@ -36,17 +59,18 @@
    (ctmx.rt/map-indexed tile req table-tiles)])
 
 (ctmx/defcomponent ^:endpoint board-row [req ^:int i tiles]
-  [:div {:id id
-         :class (str "board" i)
-         :style "border: 1px solid black; min-height: 60px"}
-   [:input {:type "hidden" :name "position"}]
-   [:input {:type "hidden" :name "tile"}]
-   [:div {:hx-patch "board-row" :hx-target (hash ".") :hx-include (format ".board%s input" i)}]
-   [:input {:type "hidden" :name "i" :value i}]
-   (ctmx.rt/map-indexed
-     #(tile %1 %2 [%3])
-     req
-     (or tiles (board/drop-into-board req i)))])
+  (let [tiles (or tiles (board/drop-into-board req i))]
+    (list
+      (when top-level?
+        (rummikub-oob req))
+      [:div {:id id
+             :class (str "board" i)
+             :style "border: 1px solid black; min-height: 60px"}
+       [:input {:type "hidden" :name "position"}]
+       [:input {:type "hidden" :name "tile"}]
+       [:div {:hx-patch "board-row" :hx-target (hash ".") :hx-include (format ".board%s input" i)}]
+       [:input {:type "hidden" :name "i" :value i}]
+       (ctmx.rt/map-indexed #(tile %1 %2 [%3]) req tiles)])))
 
 (defn next-turn [hash current]
   [:div.float-right
@@ -58,31 +82,33 @@
      :hx-vals (util/write-str {:command "next"})}
     "Pass"]])
 
-(defn buttons [hash current]
+(defn buttons [hash current empty?]
   [:div.mb-2
    (next-turn hash current)
-   [:button.btn.btn-primary.mr-2
+   [:button#pickup.btn.btn-primary.mr-2
     {:hx-post "play-area"
      :hx-target hash
      :hx-vals (util/write-str {:command "pick-up"})}
     "Pick Up"]
-   [:button.btn.btn-primary
+   [:button.btn.btn-primary.mr-2
     {:hx-post "play-area"
      :hx-target hash
      :hx-vals (util/write-str {:command "sort"})}
-    "Sort"]])
+    "Sort"]
+   (rummikub empty?)])
 
 (ctmx/defcomponent ^:endpoint play-area [req command]
   (ctmx/with-req req
     (let [user (-> req :session :user)
           _ (when post? (board/sort-tray user command))
-          {table-tiles :table :keys [rows current]} (state/player-state user)]
+          {table-tiles :table :keys [rows current]} (state/player-state user)
+          empty? (empty? (apply concat rows))]
       [:div.play-area {:id id}
        [:div {:hx-put "play-area"
               :hx-trigger "sse:play-area"
               :hx-target (hash ".")}]
        (table-div req table-tiles)
-       (buttons (hash ".") current)
+       (buttons (hash ".") current empty?)
        (ctmx.rt/map-indexed board-row req rows)])))
 
 (ctmx/defcomponent room [req]

@@ -1,5 +1,6 @@
 (ns rummikub-ctmx.render
   (:require
+    [ctmx.render :as render]
     [hiccup.core :as hiccup]
     [hiccup.page :refer [html5]]))
 
@@ -23,7 +24,7 @@
                 :href "https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
                 :integrity "sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
                 :crossorigin "anonymous"}]]
-       [:body body]
+       [:body (render/walk-attrs body)]
        [:script {:src "/js/htmx.min.js"}]
        [:script {:src "https://unpkg.com/interactjs/dist/interact.min.js"}]
        [:script {:src "/js/common.js"}]

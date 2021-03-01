@@ -77,6 +77,12 @@ const main = () => {
   interact('.board1').dropzone({
     ondrop: dropRow(1)
   });
+
+  document.addEventListener("keydown", e => {
+    if (e.key === 'p') {
+      document.querySelector('#pickup').click();
+    }
+  });
 };
 main();
 

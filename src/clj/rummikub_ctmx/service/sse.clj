@@ -52,8 +52,5 @@
 (def play-all (partial send-event-all! "play-area"))
 (def pass-all (partial send-script-all! "pass();"))
 
-(defmacro apply-remote [f & args]
-  `(->> ~(vec args)
-        (map util/write-str)
-        (string/join ", ")
-        (format "%s(%s)" ~(str f))))
+(defn rummikub! [user]
+  (send-script-all! (format "alert('%s says Rummikub!');" user)))
