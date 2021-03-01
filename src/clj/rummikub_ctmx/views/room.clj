@@ -55,7 +55,7 @@
          (case number 0 ":)" number)]))))
 
 (ctmx/defcomponent table-div [req table-tiles]
-  [:div {:style "height: 400px"}
+  [:div#table {:style "height: 400px"}
    (ctmx.rt/map-indexed tile req table-tiles)])
 
 (ctmx/defcomponent ^:endpoint board-row [req ^:int i tiles]
@@ -66,8 +66,6 @@
       [:div {:id id
              :class (str "board" i)
              :style "border: 1px solid black; min-height: 60px"}
-       [:input {:type "hidden" :name "position"}]
-       [:input {:type "hidden" :name "tile"}]
        [:div {:hx-patch "board-row" :hx-target (hash ".") :hx-include (format ".board%s input" i)}]
        [:input {:type "hidden" :name "i" :value i}]
        (ctmx.rt/map-indexed #(tile %1 %2 [%3]) req tiles)])))

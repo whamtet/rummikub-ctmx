@@ -43,19 +43,23 @@ const setPosition = el => el.children[0].value = getPosition(el);
 
 const dropRow = (row) => (e) => {
   const dropped = e.dragEvent.target;
-  document.querySelectorAll(`.board${row} .tile`).forEach(setPosition);
-  const form = document.querySelector(`.board${row}`);
-  const [position, tile, submit] = form.children;
-  position.value = getPosition(dropped);
-  tile.value = dropped.id;
-  dropped.remove();
-  submit.click();
+  const form = document.querySelector('.board' + row);
+  form.appendChild(dropped);
+  form.querySelectorAll('.tile').forEach(setPosition);
+  form.children[0].click();
 };
 
 const dropBody = (e) => {
   const dropped = e.dragEvent.target;
   setPosition(dropped);
   dropped.children[1].click();
+  const position = getCoords(dropped);
+  const style = dropped.style;
+  style.transform = '';
+  style.position = 'absolute';
+  style.left = position.left + 'px';
+  style.top = position.top + 'px';
+  document.querySelector('#table').appendChild(dropped);
 };
 
 const main = () => {
