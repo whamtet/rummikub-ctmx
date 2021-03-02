@@ -116,7 +116,11 @@
   (swap! state next-turn))
 
 (defn users []
-  (->> @state :players vals (map first) set))
+  (let [{:keys [players current]} @state
+        players (->> players vals (map first) set)]
+    (if current
+      (conj players current)
+      players)))
 
 (defn third [x]
   (get x 2))

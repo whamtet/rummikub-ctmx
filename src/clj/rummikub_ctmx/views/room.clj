@@ -19,7 +19,7 @@
       (assoc base-style :color color :left (str x "px") :top (str y "px") :position "absolute")
       (assoc base-style :color color))))
 
-(defn rummikub [empty?]
+(defn rummikub [hash empty?]
   [:button#rummikub
    {:hx-post "play-area"
     :hx-target hash
@@ -27,7 +27,7 @@
     :hx-vals {:command "rummikub"}}
    "Rummikub!"])
 
-(defn- rummikub-oob [req]
+(defn- rummikub-oob [hash req]
   (as-> req $
         (:session $)
         (:user $)
@@ -35,22 +35,24 @@
         (:rows $)
         (apply concat $)
         (empty? $)
-        (rummikub $)
+        (rummikub hash $)
         (assoc-in $ [1 :hx-swap-oob] "true")))
 
-(defn- tile-update [req]
+(defn- tile-update [hash req]
   (board/update-table req)
-  (rummikub-oob req))
+  (rummikub-oob hash req))
 
 (ctmx/defcomponent ^:endpoint tile [req _ [[color number suffix] [x y]]]
   (ctmx/with-req req
     (if (and patch? top-level?)
-      (tile-update req)
+      (tile-update (hash-find "play-area") req)
       (let [n (string/join "-" [(name color) number suffix])
             color (case color :yellow "gold" (name color))]
-        [:div.text-center.tile {:id n :style (tile-style color x y)}
+        [:div.text-center.tile {:id id :style (tile-style color x y)}
          [:input {:type "hidden" :name "position"}]
-         [:div {:hx-patch "tile" :hx-include (format "#%s input" n)}]
+         [:div {:hx-patch "tile"
+                :hx-include (format "#%s input" id)
+                :hx-target (hash ".")}]
          [:input {:type "hidden" :name "tile" :value n}]
          (case number 0 ":)" number)]))))
 
@@ -62,7 +64,7 @@
   (let [tiles (or tiles (board/drop-into-board req i))]
     (list
       (when top-level?
-        (rummikub-oob req))
+        (rummikub-oob (hash "../..") req))
       [:div {:id id
              :class (str "board" i)
              :style "border: 1px solid black; min-height: 60px"}
@@ -93,7 +95,7 @@
      :hx-target hash
      :hx-vals (util/write-str {:command "sort"})}
     "Sort"]
-   (rummikub empty?)])
+   (rummikub hash empty?)])
 
 (ctmx/defcomponent ^:endpoint play-area [req command]
   (ctmx/with-req req
