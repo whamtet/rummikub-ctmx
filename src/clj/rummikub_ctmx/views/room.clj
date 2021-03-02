@@ -3,21 +3,12 @@
     [clojure.string :as string]
     [ctmx.core :as ctmx]
     ctmx.rt
+    [rummikub-ctmx.config :as config]
     [rummikub-ctmx.controller.board :as board]
     [rummikub-ctmx.service.state :as state]
     [rummikub-ctmx.util :as util]
-    [rummikub-ctmx.views.control-panel :as control-panel]))
-
-(def ^:private base-style {:width "2em"
-                           :height "3em"
-                           :border "1px solid grey"
-                           :margin "5px"
-                           :display "inline-block"})
-(defn tile-style [color x y]
-  (util/fmt-style
-    (if x
-      (assoc base-style :color color :left (str x "px") :top (str y "px") :position "absolute")
-      (assoc base-style :color color))))
+    [rummikub-ctmx.views.control-panel :as control-panel]
+    [rummikub-ctmx.views.tile :as tile]))
 
 (defn rummikub [hash empty?]
   [:button#rummikub
@@ -31,46 +22,40 @@
   (as-> req $
         (:session $)
         (:user $)
-        (state/player-state $)
-        (:rows $)
+        (state/rows-for $)
         (apply concat $)
         (empty? $)
         (rummikub hash $)
         (assoc-in $ [1 :hx-swap-oob] "true")))
 
-(defn- tile-update [hash req]
-  (board/update-table req)
-  (rummikub-oob hash req))
+(ctmx/defn-parse update-table [hash {:keys [^:int x ^:int y tile]} user]
+  (board/update-table tile x y user)
+  nil)
 
-(ctmx/defcomponent ^:endpoint tile [req _ [[color number suffix] [x y]]]
-  (ctmx/with-req req
-    (if (and patch? top-level?)
-      (tile-update (hash-find "play-area") req)
-      (let [n (string/join "-" [(name color) number suffix])
-            color (case color :yellow "gold" (name color))]
-        [:div.text-center.tile {:id id :style (tile-style color x y)}
-         [:input {:type "hidden" :name "position"}]
-         [:div {:hx-patch "tile"
-                :hx-include (format "#%s input" id)
-                :hx-target (hash ".")}]
-         [:input {:type "hidden" :name "tile" :value n}]
-         (case number 0 ":)" number)]))))
+(defmacro with-user [req & body]
+  `(ctmx/with-req ~req
+     (let [{:keys [~'user]} ~'session]
+       ~@body)))
 
-(ctmx/defcomponent table-div [req table-tiles]
-  [:div#table {:style "height: 400px"}
-   (ctmx.rt/map-indexed tile req table-tiles)])
+(ctmx/defcomponent ^:endpoint table-div [req]
+  (with-user req
+    (if patch?
+      (update-table "#todo" params user)
+      [:div {:id id :style "height: 400px"}
+       [:div#table-update {:hx-patch "table-div"}]
+       (map tile/tile (state/table-for user))])))
 
-(ctmx/defcomponent ^:endpoint board-row [req ^:int i tiles]
-  (let [tiles (or tiles (board/drop-into-board req i))]
-    (list
-      (when top-level?
-        (rummikub-oob (hash "../..") req))
-      [:div {:id id
-             :class (str "board" i)
-             :style "border: 1px solid black; min-height: 60px"}
-       [:div {:hx-patch "board-row" :hx-target (hash ".") :hx-include (format ".board%s input" i)}]
-       [:input {:type "hidden" :name "i" :value i}]
-       (ctmx.rt/map-indexed #(tile %1 %2 [%3]) req tiles)])))
+#_(ctmx/defcomponent ^:endpoint board-row [req ^:int i tiles]
+    (let [tiles (or tiles (board/drop-into-board req i))]
+      (list
+        (when top-level?
+          (rummikub-oob (hash "../..") req))
+        [:div {:id id
+               :class (str "board" i)
+               :style "border: 1px solid black; min-height: 60px"}
+         [:div {:hx-patch "board-row" :hx-target (hash ".") :hx-include (format ".board%s input" i)}]
+         [:input {:type "hidden" :name "i" :value i}]
+         (ctmx.rt/map-indexed #(tile %1 %2 [%3]) req tiles)])))
 
 (defn next-turn [hash current]
   [:div.float-right
@@ -97,24 +82,21 @@
     "Sort"]
    (rummikub hash empty?)])
 
-(ctmx/defcomponent ^:endpoint play-area [req command]
-  (ctmx/with-req req
-    (let [user (-> req :session :user)
-          _ (when post? (board/sort-tray user command))
-          {table-tiles :table :keys [rows current]} (state/player-state user)
-          empty? (empty? (apply concat rows))]
-      [:div.play-area {:id id}
-       [:div {:hx-put "play-area"
-              :hx-trigger "sse:play-area"
-              :hx-target (hash ".")}]
-       (table-div req table-tiles)
-       (buttons (hash ".") current empty?)
-       (ctmx.rt/map-indexed board-row req rows)])))
+#_(ctmx/defcomponent ^:endpoint play-area [req command]
+    (ctmx/with-req req
+      (let [user (-> req :session :user)
+            _ (when post? (board/sort-tray user command))
+            {table-tiles :table :keys [rows current]} (state/player-state user)
+            empty? (empty? (apply concat rows))]
+        [:div.play-area {:id id}
+         (table-div req table-tiles)
+         (buttons (hash ".") current empty?)
+         (ctmx.rt/map-indexed board-row req rows)])))
 
 (ctmx/defcomponent room [req]
   (let [{:keys [user]} (:session req)]
-    [:div {:hx-sse (str "connect:/api/sse?user=" user)}
-     [:div {:hx-sse "swap:script" :hx-swap "innerHTML"}]
+    [:div {:hx-ws (format "connect:ws:%s/api/sse?user=%s" (config/host) user)}
+     [:script#script]
      (control-panel/control-panel req user)
      [:h2 "Welcome " user]
-     (play-area req)]))
+     (table-div req)]))

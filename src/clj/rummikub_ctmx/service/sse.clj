@@ -2,10 +2,11 @@
   (:require
     [clojure.set :as set]
     [clojure.string :as string]
-    [hiccup.core :as hiccup]
+    [ctmx.render :as render]
     [org.httpkit.server :as httpkit]
     [rummikub-ctmx.service.state :as state]
-    [rummikub-ctmx.util :as util]))
+    [rummikub-ctmx.util :as util]
+    [rummikub-ctmx.views.tile :as tile]))
 
 (defonce connections (atom {}))
 
@@ -14,10 +15,8 @@
 (defn remove-connection [user]
   (swap! connections dissoc user))
 
-(defn- event-str [event]
-  (format "event: %s\ndata: \n\n" event))
 (defn- script-str [script]
-  (format "event: script\ndata: %s\n\n" (hiccup/html [:script script])))
+  (render/html [:script#script script]))
 
 (defn- send-retry
   ([e recipients]
@@ -42,15 +41,13 @@
 (defn send-script-all! [script & exceptions]
   (send-all! (script-str script) exceptions))
 
-(defn send-event! [event & recipients]
-  (send! (event-str event) recipients))
-(defn send-event-all! [event & exceptions]
-  (send-all! (event-str event) exceptions))
-
-(def refresh (partial send-script! "location.reload();"))
 (def refresh-all (partial send-script-all! "location.reload();"))
-(def play-all (partial send-event-all! "play-area"))
 (def pass-all (partial send-script-all! "pass();"))
+
+(defn update-tile [tile position & exceptions]
+  (send-all!
+    (render/html (tile/tile [tile position]))
+    exceptions))
 
 (defn rummikub! [user]
   (send-script-all! (format "rummikub('%s');" user)))

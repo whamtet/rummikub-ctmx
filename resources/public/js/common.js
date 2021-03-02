@@ -32,12 +32,12 @@ function getCoords(elem) { // crossbrowser version
   var top  = box.top +  scrollTop - clientTop;
   var left = box.left + scrollLeft - clientLeft;
 
-  return { top: Math.round(top), left: Math.round(left) };
+  return { y: Math.round(top), x: Math.round(left) };
 }
 
 const getPosition = el => {
   const position = getCoords(el);
-  return position.left + ', ' + position.top;
+  return position.x + ', ' + position.y;
 };
 const setPosition = el => el.children[0].value = getPosition(el);
 
@@ -51,15 +51,23 @@ const dropRow = (row) => (e) => {
 
 const dropBody = (e) => {
   const dropped = e.dragEvent.target;
-  setPosition(dropped);
-  dropped.children[1].click();
+  const tile = dropped.children[1].value;
+  const localMove = tile === dropped.id;
   const position = getCoords(dropped);
+  position.tile = tile;
+  const button = document.querySelector('#table-update');
+  button.setAttribute('hx-vals', JSON.stringify(position));
+  button.click();
+
+/*   setPosition(dropped);
+  dropped.children[1].click();
+
   const style = dropped.style;
   style.transform = '';
   style.position = 'absolute';
   style.left = position.left + 'px';
   style.top = position.top + 'px';
-  document.querySelector('#table').appendChild(dropped);
+  document.querySelector('#table').appendChild(dropped); */
 };
 
 const main = () => {

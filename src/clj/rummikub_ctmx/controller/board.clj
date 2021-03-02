@@ -12,11 +12,10 @@
     [(Double/parseDouble a) (Double/parseDouble b)]))
 (def ^:private parse-left #(-> % parse-coord first))
 
-(defn update-table [{:keys [session params]}]
-  (let [{:keys [tile position]} params
-        {:keys [user]} session]
-    (state/put-down! (parse-tile tile) (parse-coord position))
-    (sse/play-all user)))
+(defn update-table [tile x y user]
+  (let [tile (parse-tile tile)]
+    (state/put-down! tile [x y])
+    (sse/update-tile tile [x y] user)))
 
 (defn-parse drop-into-board [{{:keys [^:array position ^:array tile]} :params
                               {:keys [user]} :session}
@@ -27,7 +26,7 @@
                  (sort-by second)
                  (map first))]
     (state/pick-up-used! row user i)
-    (sse/play-all user)
+    #_(sse/play-all user)
     row))
 
 (defn sort-tray [user command]
@@ -37,7 +36,7 @@
     "next"
     (do
       (state/next-turn!)
-      (sse/play-all user)
+      #_(sse/play-all user)
       (sse/pass-all user)
       nil)
     "rummikub"

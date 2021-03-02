@@ -26,6 +26,6 @@
                 :crossorigin "anonymous"}]]
        [:body (render/walk-attrs body)]
        [:script {:src "/js/htmx.min.js"}]
-       [:script {:src "https://unpkg.com/interactjs/dist/interact.min.js"}]
+       [:script {:src "/js/interact.min.js"}]
        [:script {:src "/js/common.js"}]
        (when js [:script {:src (str "/js" js)}])))))

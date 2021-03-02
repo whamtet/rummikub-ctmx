@@ -124,16 +124,19 @@
 
 (defn third [x]
   (get x 2))
-(defn player-state [player]
-  (let [{:keys [players table current]} @state]
-    {:table table
-     :current current
-     :rows
-     (->> players
-          (filter #(-> % second first (= player)))
-          (sort-by #(-> % second third))
-          (reduce (fn [m [tile [_ i]]]
-                    (update m i conj tile)) [[] []]))}))
+(defn table-for [player]
+  (let [{:keys [table]} @state]
+    (for [tile tiles]
+      [tile (table tile [:hidden])])))
+(defn current []
+  (:current @state))
+(defn rows-for [player]
+  (->> @state
+       :players
+       (filter #(-> % second first (= player)))
+       (sort-by #(-> % second third))
+       (reduce (fn [m [tile [_ i]]]
+                 (update m i conj tile)) [[] []])))
 
 (defn swap-players [s player1 player2]
   (let [player-swap #({player1 player2 player2 player1} % %)]
