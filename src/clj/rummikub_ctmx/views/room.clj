@@ -75,7 +75,7 @@
 (defn next-turn [hash current]
   [:div.float-right
    "Current turn: " current
-   [:button.btn.btn-primary.ml-2
+   [:button#pass.btn.btn-primary.ml-2
     {:hx-post "play-area"
      :hx-target hash
      :onclick "pass()"

@@ -82,9 +82,15 @@ const main = () => {
     ondrop: dropRow(1)
   });
 
+  const keyBindings = {
+    p: '#pickup',
+    Enter: '#pass'
+  };
+
   document.addEventListener("keydown", e => {
-    if (e.key === 'p') {
-      document.querySelector('#pickup').click();
+    const id = keyBindings[e.key];
+    if (id) {
+      document.querySelector(id).click();
     }
   });
 };
