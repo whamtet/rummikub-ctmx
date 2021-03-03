@@ -52,7 +52,7 @@
           :hx-vals {:command "drop"}
           :hx-include (format ".board%s input" i)}]
    [:input {:type "hidden" :name "i" :value i}]
-   (map #(-> % list tile/tile) tiles)])
+   (map tile/tile-board tiles)])
 
 (ctmx/defcomponent buttons [req empty?]
   [:div.mb-2
