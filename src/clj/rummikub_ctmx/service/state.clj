@@ -113,7 +113,9 @@
 (defn next-turn [s]
   (assoc s :current (next-player (:players s) (:current s))))
 (defn next-turn! []
-  (swap! state next-turn))
+  (let [{:keys [current players]} (swap! state next-turn)]
+    {:current current
+     :players (->> players vals (map first) distinct)}))
 
 (defn users []
   (let [{:keys [players current]} @state

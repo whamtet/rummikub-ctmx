@@ -18,10 +18,8 @@
     :hx-vals {:command "rummikub"}}
    "Rummikub!"])
 
-(defn- rummikub-oob [hash req]
-  (as-> req $
-        (:session $)
-        (:user $)
+(defn- rummikub-oob [hash user]
+  (as-> user $
         (state/rows-for $)
         (apply concat $)
         (empty? $)
@@ -30,20 +28,21 @@
 
 (ctmx/defn-parse update-table [hash {:keys [^:int x ^:int y tile]} user]
   (board/update-table tile x y user)
-  nil)
-
-(defmacro with-user [req & body]
-  `(ctmx/with-req ~req
-     (let [{:keys [~'user]} ~'session]
-       ~@body)))
+  (rummikub-oob hash user))
 
 (ctmx/defcomponent ^:endpoint table-div [req]
-  (with-user req
+  (util/with-user req
     (if patch?
       (update-table "#todo" params user)
       [:div {:id id :style "height: 400px"}
        [:div#table-update {:hx-patch "table-div"}]
        (map tile/tile (state/table-for user))])))
+
+(ctmx/defcomponent ^:endpoint next-turn [req]
+  (util/with-user req
+    (if post?
+      (board/next-turn id)
+      (tile/turn-panel id user (state/current)))))
 
 #_(ctmx/defcomponent ^:endpoint board-row [req ^:int i tiles]
     (let [tiles (or tiles (board/drop-into-board req i))]
@@ -57,30 +56,29 @@
          [:input {:type "hidden" :name "i" :value i}]
          (ctmx.rt/map-indexed #(tile %1 %2 [%3]) req tiles)])))
 
-(defn next-turn [hash current]
-  [:div.float-right
-   "Current turn: " current
-   [:button#pass.btn.btn-primary.ml-2
-    {:hx-post "play-area"
-     :hx-target hash
-     :onclick "pass()"
-     :hx-vals (util/write-str {:command "next"})}
-    "Pass"]])
-
-(defn buttons [hash current empty?]
+(ctmx/defcomponent buttons [req empty?]
   [:div.mb-2
-   (next-turn hash current)
+   (next-turn req)
    [:button#pickup.btn.btn-primary.mr-2
-    {:hx-post "play-area"
-     :hx-target hash
+    {:hx-post "board"
+     :hx-target (hash "..")
      :hx-vals (util/write-str {:command "pick-up"})}
     "Pick Up"]
    [:button.btn.btn-primary.mr-2
-    {:hx-post "play-area"
-     :hx-target hash
+    {:hx-post "board"
+     :hx-target (hash "..")
      :hx-vals (util/write-str {:command "sort"})}
     "Sort"]
-   (rummikub hash empty?)])
+   (rummikub (hash "..") empty?)])
+
+(ctmx/defcomponent ^:endpoint board [req command]
+  (util/with-user req
+    (when command
+      (prn 'board command))
+    (let [rows (state/rows-for user)]
+      [:div {:id id}
+       (buttons req (->> rows (apply concat) empty?))
+       ])))
 
 #_(ctmx/defcomponent ^:endpoint play-area [req command]
     (ctmx/with-req req
@@ -99,4 +97,5 @@
      [:script#script]
      (control-panel/control-panel req user)
      [:h2 "Welcome " user]
-     (table-div req)]))
+     (table-div req)
+     (board req)]))

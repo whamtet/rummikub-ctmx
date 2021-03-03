@@ -1,6 +1,7 @@
 (ns rummikub-ctmx.views.tile
   (:require
-    [clojure.string :as string]))
+    [clojure.string :as string]
+    [rummikub-ctmx.util :as util]))
 
 (def ^:private base-style {:width "2em"
                            :height "3em"
@@ -20,3 +21,9 @@
      [:input {:type "hidden" :name "position"}]
      [:input {:type "hidden" :name "tile" :value n}]
      (case number 0 ":)" number)]))
+
+(defn turn-panel [id user current]
+  [:form.float-right {:id id :hx-post "next-turn"}
+   "Current turn: " current
+   [:input#pass.btn.btn-primary.ml-2
+    {:type "submit" :value "Pass" :disabled (not= user current)}]])

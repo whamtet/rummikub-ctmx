@@ -15,8 +15,8 @@
 (defn remove-connection [user]
   (swap! connections dissoc user))
 
-(defn- script-str [script]
-  (render/html [:script#script script]))
+(defn- script-tag [script]
+  [:script#script script])
 
 (defn- send-retry
   ([e recipients]
@@ -32,21 +32,28 @@
        (recur e leftovers (dec retries))))))
 
 (defn send! [event recipients]
-  (send-retry event (set/union (set recipients) (state/users))))
+  (send-retry (render/html event) (set/intersection (set recipients) (state/users))))
 (defn send-all! [event exceptions]
-  (send-retry event (set/difference (state/users) (set exceptions))))
+  (send-retry (render/html event) (set/difference (state/users) (set exceptions))))
 
 (defn send-script! [script & recipients]
-  (send! (script-str script) recipients))
+  (send! (script-tag script) recipients))
 (defn send-script-all! [script & exceptions]
-  (send-all! (script-str script) exceptions))
+  (send-all! (script-tag script) exceptions))
 
 (def refresh-all (partial send-script-all! "location.reload();"))
-(def pass-all (partial send-script-all! "pass();"))
+(defn pass-all [id {:keys [current players]}]
+  (doseq [player players]
+    (send! (tile/turn-panel id player current) [player]))
+  (as-> (rand-int 100) i
+        (- i 84)
+        (max i 0)
+        (format "pass(%s)" i)
+        (send-script-all! i)))
 
 (defn update-tile [tile position & exceptions]
   (send-all!
-    (render/html (tile/tile [tile position]))
+    (tile/tile [tile position])
     exceptions))
 
 (defn rummikub! [user]

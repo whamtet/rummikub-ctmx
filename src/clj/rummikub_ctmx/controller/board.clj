@@ -29,6 +29,10 @@
     #_(sse/play-all user)
     row))
 
+(defn next-turn [id]
+  (sse/pass-all id (state/next-turn!))
+  nil)
+
 (defn sort-tray [user command]
   (case command
     "pick-up" (state/pick-up-one! user)

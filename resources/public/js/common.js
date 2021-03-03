@@ -109,8 +109,7 @@ function playSound(url) {
     a.play();
 }
 
-const pass = () => {
-  const i = Math.max(0, Math.floor(Math.random() * 100) - 84);
+const pass = (i) => {
   playSound(`/pass${i}.mp4`);
 };
 
