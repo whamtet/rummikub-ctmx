@@ -57,4 +57,4 @@
     exceptions))
 
 (defn rummikub! [user]
-  (send-script-all! (format "rummikub('%s');" user)))
+  (send-script-all! (format "rummikub('%s', %s);" user (rand-int 7))))

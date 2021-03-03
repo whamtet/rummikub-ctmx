@@ -17,31 +17,23 @@
     (state/put-down! tile [x y])
     (sse/update-tile tile [x y] user)))
 
-(defn-parse drop-into-board [{{:keys [^:array position ^:array tile]} :params
-                              {:keys [user]} :session}
-                             i]
+(defn-parse drop-into-board [{{:keys [^:array position ^:array tile ^:int i]} :params} user]
   (let [lefts (map parse-left position)
         tiles (map parse-tile tile)
         row (->> (map list tiles lefts)
                  (sort-by second)
                  (map first))]
     (state/pick-up-used! row user i)
-    #_(sse/play-all user)
-    row))
+    (sse/update-tile (last tiles) [:hidden] user)))
 
 (defn next-turn [id]
   (sse/pass-all id (state/next-turn!))
   nil)
 
-(defn sort-tray [user command]
+(defn sort-tray [req user command]
   (case command
+    "drop" (drop-into-board req user)
     "pick-up" (state/pick-up-one! user)
     "sort" (state/sort-player! user)
-    "next"
-    (do
-      (state/next-turn!)
-      #_(sse/play-all user)
-      (sse/pass-all user)
-      nil)
     "rummikub"
     (sse/rummikub! user)))

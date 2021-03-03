@@ -52,22 +52,11 @@ const dropRow = (row) => (e) => {
 const dropBody = (e) => {
   const dropped = e.dragEvent.target;
   const tile = dropped.children[1].value;
-  const localMove = tile === dropped.id;
   const position = getCoords(dropped);
   position.tile = tile;
-  const button = document.querySelector('#table-update');
+  const button = document.querySelector('.table-update');
   button.setAttribute('hx-vals', JSON.stringify(position));
   button.click();
-
-/*   setPosition(dropped);
-  dropped.children[1].click();
-
-  const style = dropped.style;
-  style.transform = '';
-  style.position = 'absolute';
-  style.left = position.left + 'px';
-  style.top = position.top + 'px';
-  document.querySelector('#table').appendChild(dropped); */
 };
 
 const main = () => {
@@ -97,7 +86,7 @@ const main = () => {
 
   document.addEventListener("keydown", e => {
     const id = keyBindings[e.key];
-    if (id) {
+    if (id && document.querySelector(id)) {
       document.querySelector(id).click();
     }
   });
@@ -113,8 +102,7 @@ const pass = (i) => {
   playSound(`/pass${i}.mp4`);
 };
 
-const rummikub = user => {
-  const i = Math.floor(Math.random() * 7);
+const rummikub = (user, i) => {
   playSound(`/win${i}.mp4`);
   alert(`${user} says: Rummikub!`);
 };
