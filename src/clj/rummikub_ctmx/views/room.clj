@@ -73,13 +73,14 @@
   (util/with-user req
     (when command
       (board/sort-tray req user command))
-    (let [rows (state/rows-for user)]
-      (list
-        (when top-level?
-          (rummikub-oob (hash ".") user))
-        [:div {:id id}
-         (buttons req (->> rows (apply concat) empty?))
-         (ctmx.rt/map-indexed board-row req rows)]))))
+    (when (not= "rummikub" command)
+      (let [rows (state/rows-for user)]
+        (list
+          (when top-level?
+            (rummikub-oob (hash ".") user))
+          [:div {:id id}
+           (buttons req (->> rows (apply concat) empty?))
+           (ctmx.rt/map-indexed board-row req rows)])))))
 
 (ctmx/defcomponent room [req]
   (let [{:keys [user]} (:session req)]
