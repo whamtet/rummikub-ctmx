@@ -12,7 +12,8 @@
      (source/from-system-props)
      (source/from-env)]))
 
-(defn host []
-  (-> (:url env "http://localhost:3000")
-      (.split "//")
-      second))
+(defn ws-host []
+  (.replace
+    (:url env "http://localhost:3000")
+    "http"
+    "ws"))

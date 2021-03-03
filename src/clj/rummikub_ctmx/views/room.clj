@@ -93,7 +93,7 @@
 
 (ctmx/defcomponent room [req]
   (let [{:keys [user]} (:session req)]
-    [:div {:hx-ws (format "connect:ws:%s/api/sse?user=%s" (config/host) user)}
+    [:div {:hx-ws (format "connect:%s/api/sse?user=%s" (config/ws-host) user)}
      [:script#script]
      (control-panel/control-panel req user)
      [:h2 "Welcome " user]
