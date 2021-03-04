@@ -10,7 +10,7 @@
                            :display "inline-block"})
 (defn tile-style [color x y]
   (case x
-    :hidden (assoc base-style :display "none")
+    :hidden (assoc base-style :color color :display "none")
     (assoc base-style :color color :left (str x "px") :top (str y "px") :position "absolute")))
 
 (defn tile [[[color number suffix] [x y]]]

@@ -43,8 +43,17 @@ const setPosition = el => el.children[0].value = getPosition(el);
 
 const dropRow = (row) => (e) => {
   const dropped = e.dragEvent.target;
+  const tile = dropped.children[1].value;
+
   const form = document.querySelector('.board' + row);
-  form.appendChild(dropped);
+  form.appendChild(dropped.cloneNode(true));
+
+  if (dropped.id === tile) {
+    dropped.style.display = 'none';
+  } else {
+    dropped.remove();
+  }
+
   form.querySelectorAll('.tile').forEach(setPosition);
   form.children[0].click();
 };
@@ -52,11 +61,25 @@ const dropRow = (row) => (e) => {
 const dropBody = (e) => {
   const dropped = e.dragEvent.target;
   const tile = dropped.children[1].value;
+
+  // first submit update
   const position = getCoords(dropped);
   position.tile = tile;
   const button = document.querySelector('.table-update');
   button.setAttribute('hx-vals', JSON.stringify(position));
   button.click();
+
+  if (dropped.id !== tile) {
+    const bodyTile = document.getElementById(tile);
+    const {style} = bodyTile;
+    style.display = 'inline-block';
+    style.left = position.x + 'px';
+    style.top = position.y + 'px';
+    style.position = 'absolute';
+
+    // and remove original
+    dropped.remove();
+  }
 };
 
 const main = () => {
@@ -94,8 +117,8 @@ const main = () => {
 main();
 
 function playSound(url) {
-    var a = new Audio(url);
-    a.play();
+  var a = new Audio(url);
+  a.play();
 }
 
 const pass = (i) => {
