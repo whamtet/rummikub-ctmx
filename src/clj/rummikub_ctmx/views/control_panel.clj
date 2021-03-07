@@ -26,7 +26,7 @@
          :hx-confirm "Quit?"} "Quit"] [:br]
        [:button.btn.btn-primary.mt-2
         {:hx-delete "control-panel"
-         :hx-confirm "Reset Game?"} "Reset"]
+         :hx-confirm "New Game?"} "New Game"]
        [:div.mt-2
         (->> (state/users)
              (remove #(= % user))

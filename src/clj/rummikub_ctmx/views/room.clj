@@ -62,7 +62,7 @@
      :hx-target (hash "..")
      :hx-vals (util/write-str {:command "pick-up"})}
     "Pick Up"]
-   [:button.btn.btn-primary.mr-2
+   [:button#sort.btn.btn-primary.mr-2
     {:hx-post "board"
      :hx-target (hash "..")
      :hx-vals (util/write-str {:command "sort"})}

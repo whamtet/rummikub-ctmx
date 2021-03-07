@@ -104,6 +104,7 @@ const main = () => {
 
   const keyBindings = {
     p: '#pickup',
+    s: '#sort',
     Enter: '#pass'
   };
 
